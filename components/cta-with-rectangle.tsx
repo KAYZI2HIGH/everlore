@@ -38,11 +38,11 @@ export function CTASection({
     <section
       className={cn("overflow-hidden pt-0 md:py-20 z-1000 relative", className)}
     >
-      <div className="relative mx-auto flex max-w-container flex-col items-center px-4 md:px-8 py-8 md:py-24 text-center">
+      <div className="relative mx-auto flex max-w-container flex-col items-center px-10! md:px-8 py-18 md:py-24 text-center">
         {/* Glow Effect - Behind content */}
         {withGlow && (
           <div
-            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl md:max-w-4xl h-60 md:h-100 shadow-glow rounded-xl "
+            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl md:max-w-4xl h-full md:h-100 shadow-glow rounded-xl "
             style={{ opacity: 1 }}
           />
         )}

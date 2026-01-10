@@ -92,7 +92,7 @@ export function MinimalFooter() {
     },
   ];
   return (
-    <footer className="relative">
+    <footer className="relative px-5">
       <div className="bg-[radial-gradient(35%_80%_at_30%_0%,--theme(--color-foreground/.1),transparent)] mx-auto max-w-4xl md:border-x">
         <div className="bg-border absolute inset-x-0 h-px w-full" />
         <div className="grid max-w-4xl grid-cols-2 md:grid-cols-6 gap-3 md:gap-6 p-3 md:p-4">
