@@ -12,7 +12,7 @@ const HeroSection = () => {
           <div className="p-1 px-2 text-[10px] md:text-[12px] text-white rounded-full bg-[#8DC63F] flex gap-1 items-center justify-center">
             <Info size={12} /> Update
           </div>{" "}
-          Fundamentals to Youtube Automation is now available
+          Get 50% Discount on first purchases
         </div>
 
         <h1 className="text-3xl md:text-5xl text-balance tracking-wider leading-snug font-semibold">
@@ -23,12 +23,12 @@ const HeroSection = () => {
           build practical skills, deploy real-world strategies, and create
           sustainable income in the digital economy.
         </p>
-        <div className="flex flex-col md:flex-row gap-3 md:gap-5 items-center justify-center w-fit mt-8 md:mt-10">
+        <div className="flex flex-row gap-3 md:gap-5 items-center justify-center w-fit mt-8 md:mt-10">
           <Button>Read the Blog</Button>
           <Button variant={"outline"}>Get Started</Button>
         </div>
       </div>
-      <SvgIcon className="absolute -top-50 -right-50 max-md:size-120" />
+      <SvgIcon className="absolute -top-50 -right-50 max-md:size-90" />
     </div>
   );
 };
