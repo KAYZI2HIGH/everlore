@@ -126,14 +126,14 @@ const Feature = ({
           defaultValue={tabs[0].value}
           className="mt-6 md:mt-8"
         >
-          <TabsList className="container flex flex-col items-center justify-center gap-2 md:gap-4 lg:gap-10 sm:flex-row overflow-x-auto">
+          <TabsList className="container grid grid-cols-2 md:grid-cols-4 items-center justify-center gap-2 md:gap-4 lg:gap-10  overflow-x-hidden px-2 md:px-4 lg:px-0">
             {tabs.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
                 className="flex items-center gap-2 rounded-xl px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-semibold text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary whitespace-nowrap"
               >
-                {tab.icon} <span className="hidden sm:inline">{tab.label}</span>
+                {tab.icon} <span className="max-w-lg truncate">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>

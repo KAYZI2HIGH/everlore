@@ -80,15 +80,15 @@ const Testimonials = () => {
           className="flex flex-col items-center justify-center max-w-[540px] mx-auto"
         >
           <div className="flex justify-center">
-            <div className="border py-1 px-3 md:px-4 rounded-lg text-xs md:text-sm">
+            <div className="border py-1 px-3 md:px-4 rounded-lg text-xs md:text-sm font-medium">
               Testimonials
             </div>
           </div>
 
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium tracking-tighter mt-4 md:mt-5 text-center">
+          <h2 className="text-2xl sm:text-2xl lg:text-3xl xl:text-4xl font-medium tracking-tighter mt-4 md:mt-5 text-center">
             What our learners say
           </h2>
-          <p className="text-center mt-3 md:mt-5 opacity-75 text-sm md:text-base">
+          <p className="text-center mt-3 md:mt-5 opacity-75 text-sm md:text-base max-md:max-w-[280px]">
             Hear from those who've transformed their skills and income with
             Everlore.
           </p>

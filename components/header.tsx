@@ -80,7 +80,7 @@ export function Header() {
         isHidden ? "-translate-y-full" : "translate-y-0"
       )}
     >
-      <nav className="mx-auto flex h-14 w-full items-center justify-between p-10">
+      <nav className="mx-auto flex h-14 w-full items-center justify-between p-10 px-5 md:px-10">
         <div className="hover:bg-accent rounded-md">
           <WordmarkIcon className="h-4" />
         </div>
@@ -116,7 +116,7 @@ export function Header() {
       </nav>
       <MobileMenu
         open={open}
-        className="flex flex-col justify-between gap-2"
+        className="flex flex-col justify-between gap-2 relative z-1000 pt-10"
       >
         <div className="grid gap-y-2">
           {links.map((link) => (

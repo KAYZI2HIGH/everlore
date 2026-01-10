@@ -12,7 +12,7 @@ const WhyEverloreSection = () => {
         digital innovation. We Don't Teach Courses, We Build Outcomes.
       </p>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mt-12">
-        <div className="p-5 border rounded-lg space-y-3 h-100 relative">
+        <div className="p-5 border rounded-lg space-y-3 h-100 relative overflow-hidden">
           <h3 className="text-xl font-semibold">Skill-to-Income Pathways™</h3>
           <p className="text-sm">
             Structured learning paths designed to move you from skill
@@ -23,10 +23,10 @@ const WhyEverloreSection = () => {
             alt="ribbon"
             width={500}
             height={500}
-            className="absolute bottom-0 right-0 "
+            className="absolute bottom-0 max-md:-bottom-7 right-0 max-md:size-100"
           />
         </div>
-        <div className="p-5 border rounded-lg space-y-3 h-100 relative">
+        <div className="p-5 border rounded-lg space-y-3 h-100 relative overflow-hidden">
           <h3 className="text-xl font-semibold">Everlore Digital Lab™</h3>
           <p className="text-sm">
             A members-only environment where strategies are tested, updated, and
@@ -37,10 +37,10 @@ const WhyEverloreSection = () => {
             alt="ribbon"
             width={500}
             height={500}
-            className="absolute bottom-0 right-0 "
+            className="absolute bottom-0 max-md:-bottom-20 right-0 max-md:size-120"
           />
         </div>
-        <div className="p-5 border rounded-lg space-y-3 h-100 relative">
+        <div className="p-5 border rounded-lg space-y-3 h-100 relative overflow-hidden">
           <h3 className="text-xl font-semibold">Outcome-Backed Learning™</h3>
           <p className="text-sm">
             Every course is built around a defined, measurable outcome, not just
@@ -51,10 +51,10 @@ const WhyEverloreSection = () => {
             alt="ribbon"
             width={500}
             height={500}
-            className="absolute bottom-0 right-0 "
+            className="absolute bottom-0 right-0 max-md:-bottom-7 max-md:w-full max-md:h-80"
           />
         </div>
-        <div className="p-5 border rounded-lg space-y-3 h-100 relative">
+        <div className="p-5 border rounded-lg space-y-3 h-100 relative overflow-hidden">
           <h3 className="text-xl font-semibold">Everlore Growth Ledger™</h3>
           <p className="text-sm">
             Your personal progress vault that tracks skills learned, paths

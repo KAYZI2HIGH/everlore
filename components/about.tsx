@@ -26,16 +26,16 @@ const AboutSection = () => {
           individuals and businesses grow through intelligent digital solutions
         </p>
         <Button className="self-center md:self-start">Explore Services</Button>
-        <div className="flex flex-col md:flex-row gap-3 md:gap-5 items-center md:items-start justify-between mt-8">
-          <div className="space-y-2 text-center">
+        <div className="grid grid-cols-6 gap-3 md:gap-5 items-center md:items-start justify-between mt-8">
+          <div className="space-y-2 text-center col-span-3">
             <h1 className="text-4xl text-[#8DC63F] font-semibold">200+</h1>
             <p className="text-sm">Students Accepted</p>
           </div>
-          <div className="space-y-2 text-center">
+          <div className="space-y-2 text-center col-span-3">
             <h1 className="text-4xl text-[#00AEEF] font-semibold">50+</h1>
             <p className="text-sm">Dreams Realized</p>
           </div>
-          <div className="space-y-2 text-center">
+          <div className="space-y-2 text-center col-start-3 col-end-5">
             <h1 className="text-4xl text-[#F15A29] font-semibold">2M+</h1>
             <p className="text-sm">Revenue Generated</p>
           </div>
