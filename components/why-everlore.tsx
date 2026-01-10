@@ -3,15 +3,15 @@ import React from "react";
 
 const WhyEverloreSection = () => {
   return (
-    <div className="w-full relative p-10 py-26 bg-white space-y-5">
-      <h2 className="text-4xl font-semibold leading-snug text-center text-balance">
+    <div className="w-full relative p-5 md:p-10 py-26! bg-white space-y-5">
+      <h2 className="text-2xl md:text-4xl font-semibold leading-snug text-center text-balance">
         Why Choose Everlore?
       </h2>
-      <p className="text-center max-w-lg mx-auto">
+      <p className="text-sm md:text-base text-center max-w-lg mx-auto">
         At Everlore, we believe in the transformative power of knowledge and
-        digital innovation. We Don’t Teach Courses, We Build Outcomes.
+        digital innovation. We Don't Teach Courses, We Build Outcomes.
       </p>
-      <div className="w-full grid grid-cols-4 gap-5 mt-12">
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mt-12">
         <div className="p-5 border rounded-lg space-y-3 h-100 relative">
           <h3 className="text-xl font-semibold">Skill-to-Income Pathways™</h3>
           <p className="text-sm">

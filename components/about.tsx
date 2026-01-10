@@ -4,26 +4,29 @@ import { Button } from "./ui/button";
 
 const AboutSection = () => {
   return (
-    <div className="w-full relative p-10 py-26 bg-white flex max-sm:flex-col gap-10">
+    <div
+      id="about"
+      className="w-full relative p-5 md:p-10 py-26! bg-white flex flex-col md:flex-row gap-5 md:gap-10"
+    >
       <Image
         src={"/about-image-illustrator.png"}
         alt="about image"
         width={800}
         height={800}
-        className="max-w-md"
+        className="w-full max-w-md"
       />
-      <div className="max-w-xl space-y-4 flex flex-col justify-center">
-        <h2 className="text-4xl font-semibold leading-snug max-sm:text-center text-balance">
+      <div className="w-full max-w-xl space-y-4 flex flex-col justify-center">
+        <h2 className="text-2xl md:text-4xl font-semibold leading-snug text-center md:text-left text-balance">
           Built on Knowledge. Designed for Growth.
         </h2>
-        <p className="max-sm:text-center">
+        <p className="text-sm md:text-base text-center md:text-left">
           Everlore Digital Services Limited is a modern digital services company
           focused on education, innovation, and execution. We exist to bridge
           the gap between learning and real-world application, helping
           individuals and businesses grow through intelligent digital solutions
         </p>
-        <Button className="max-sm:self-center">Explore Services</Button>
-        <div className="flex gap-5 items-center justify-between mt-8">
+        <Button className="self-center md:self-start">Explore Services</Button>
+        <div className="flex flex-col md:flex-row gap-3 md:gap-5 items-center md:items-start justify-between mt-8">
           <div className="space-y-2 text-center">
             <h1 className="text-4xl text-[#8DC63F] font-semibold">200+</h1>
             <p className="text-sm">Students Accepted</p>

@@ -103,33 +103,41 @@ const Feature = ({
   ],
 }: FeatureProps) => {
   return (
-    <section className="py-20">
+    <section
+      className="py-32 px-4 md:px-0"
+      id="features"
+    >
       <div className="container mx-auto">
         <div className="flex flex-col items-center gap-4 text-center">
-          <Badge variant="outline">{badge}</Badge>
-          <h1 className="max-w-2xl text-3xl font-semibold md:text-4xl">
+          <Badge
+            variant="outline"
+            className="text-xs md:text-sm"
+          >
+            {badge}
+          </Badge>
+          <h1 className="max-w-2xl text-2xl md:text-3xl lg:text-4xl font-semibold">
             {heading}
           </h1>
-          <p className="text-muted-foreground max-w-3xl mx-auto text-balance">
+          <p className="text-muted-foreground max-w-3xl mx-auto text-balance text-sm md:text-base">
             {description}
           </p>
         </div>
         <Tabs
           defaultValue={tabs[0].value}
-          className="mt-8"
+          className="mt-6 md:mt-8"
         >
-          <TabsList className="container flex flex-col items-center justify-center gap-4 sm:flex-row md:gap-10">
+          <TabsList className="container flex flex-col items-center justify-center gap-2 md:gap-4 lg:gap-10 sm:flex-row overflow-x-auto">
             {tabs.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
+                className="flex items-center gap-2 rounded-xl px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-semibold text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary whitespace-nowrap"
               >
-                {tab.icon} {tab.label}
+                {tab.icon} <span className="hidden sm:inline">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
-          <div className="mx-auto mt-8 max-w-screen-xl rounded-2xl bg-muted/70 p-6 lg:p-16">
+          <div className="mx-auto mt-6 md:mt-8 max-w-screen-xl rounded-2xl bg-muted/70 p-4 md:p-6 lg:p-16">
             {tabs.map((tab) => (
               <TabsContent
                 key={tab.value}
@@ -149,30 +157,32 @@ const Feature = ({
                     <div className="flex flex-col gap-5">
                       <Badge
                         variant="outline"
-                        className="w-fit bg-background"
+                        className="w-fit bg-background text-xs md:text-sm"
                       >
                         {tab.content.badge}
                       </Badge>
-                      <h3 className="text-3xl font-medium lg:text-5xl">
+                      <h3 className="text-2xl md:text-3xl lg:text-5xl font-medium">
                         {tab.content.title}
                       </h3>
-                      <p className="text-muted-foreground lg:text-lg">
+                      <p className="text-sm md:text-base text-muted-foreground lg:text-lg">
                         {tab.content.description}
                       </p>
                       {tab.content.list && (
                         <div>
-                          <p>We focus on:</p>
-                          <ul className="mt-2 divide-y border-y border-t-0 *:flex *:items-center *:gap-3 *:py-3">
+                          <p className="text-sm md:text-base">We focus on:</p>
+                          <ul className="mt-2 divide-y border-y border-t-0 *:flex *:items-center *:gap-3 *:py-2 md:*:py-3">
                             {tab.content.list.map((li) => (
                               <li>
-                                <p className="max-w-62.5 truncate">{li}</p>
+                                <p className="max-w-62.5 truncate text-xs md:text-sm">
+                                  {li}
+                                </p>
                               </li>
                             ))}
                           </ul>
                         </div>
                       )}
                       <Button
-                        className="mt-2.5 w-fit gap-2"
+                        className="mt-2.5 w-fit gap-2 text-xs md:text-sm"
                         size="lg"
                       >
                         {tab.content.buttonText}
@@ -181,7 +191,7 @@ const Feature = ({
                     <img
                       src={tab.content.imageSrc}
                       alt={tab.content.imageAlt}
-                      className="rounded-xl"
+                      className="rounded-xl w-full max-w-sm md:max-w-none"
                     />
                   </>
                 ) : (

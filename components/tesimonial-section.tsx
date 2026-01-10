@@ -1,4 +1,5 @@
 "use client";
+import DesignSvg from "./svg/design-svg";
 import { TestimonialsColumn } from "./testimonials-columns-1";
 import { motion } from "motion/react";
 
@@ -65,8 +66,12 @@ const thirdColumn = testimonials.slice(6, 9);
 
 const Testimonials = () => {
   return (
-    <section className="bg-background my-20 relative">
-      <div className="container z-10 mx-auto">
+    <section
+      className="bg-background py-20! relative px-4 md:px-0"
+      id="testimonials"
+    >
+      <DesignSvg className="absolute top-0 left-0 z-10 opacity-30" />
+      <div className="container z-50 relative mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -75,21 +80,21 @@ const Testimonials = () => {
           className="flex flex-col items-center justify-center max-w-[540px] mx-auto"
         >
           <div className="flex justify-center">
-            <div className="border py-1 px-4 rounded-lg text-sm">
+            <div className="border py-1 px-3 md:px-4 rounded-lg text-xs md:text-sm">
               Testimonials
             </div>
           </div>
 
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-medium tracking-tighter mt-5">
+          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium tracking-tighter mt-4 md:mt-5 text-center">
             What our learners say
           </h2>
-          <p className="text-center mt-5 opacity-75">
+          <p className="text-center mt-3 md:mt-5 opacity-75 text-sm md:text-base">
             Hear from those who've transformed their skills and income with
             Everlore.
           </p>
         </motion.div>
 
-        <div className="flex justify-center gap-6 mt-10 [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)] max-h-[740px] overflow-hidden">
+        <div className="flex justify-center gap-3 md:gap-6 mt-8 md:mt-10 z-1000 relative [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)] max-h-[740px] overflow-hidden">
           <TestimonialsColumn
             testimonials={firstColumn}
             duration={15}
