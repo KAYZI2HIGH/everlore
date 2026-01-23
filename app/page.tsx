@@ -11,7 +11,7 @@ import WhyEverloreSection from "@/components/why-everlore";
 
 export default function Home() {
   return (
-    <main className="font-sans dark:bg-black relative w-full bg-[#F3F9EB]">
+    <main className="font-sans dark:bg-black relative w-full bg-[#031c5812]">
       <Header />
       <div className="overflow-x-hidden z-10">
         <HeroSection />

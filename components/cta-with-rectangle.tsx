@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { HandWrittenTitle } from "./ui/hand-writing-text";
+import Image from "next/image";
 
 interface CTAProps {
   badge?: {
@@ -30,19 +30,20 @@ export function CTASection({
   badge = { text: "GET STARTED TODAY" },
   title = "Transform Your Skills Into Income",
   description = "Join thousands learning practical digital skills and building sustainable income streams with Everlore.",
-  action = { text: "Start Your Journey", href: "#" },
+  action = { text: "Start Your Journey", href: "/sign-up" },
   withGlow = true,
   className,
 }: CTAProps) {
   return (
     <section
-      className={cn("overflow-hidden pt-0 md:py-20 z-1000 relative", className)}
+      className={cn("overflow-hidden pt-0 md:py-20 z-100 relative", className)}
     >
+      <Image src={"/multimedia.png"} alt="background-graphic" width={800} height={600} className="absolute top-0 left-0 w-full h-full object-cover object-center opacity-70 pointer-events-none" />
       <div className="relative mx-auto flex max-w-container flex-col items-center px-10! md:px-8 py-18 md:py-24 text-center">
         {/* Glow Effect - Behind content */}
         {withGlow && (
           <div
-            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl md:max-w-4xl h-full md:h-100 shadow-glow rounded-xl "
+            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl md:max-w-4xl h-full md:h-100 shadow-glow rounded-xl bg-white"
             style={{ opacity: 1 }}
           />
         )}
@@ -85,7 +86,7 @@ export function CTASection({
             className="opacity-0 animate-fade-in-up delay-500"
             asChild
           >
-            <a href={"#features"}>Read the blogs</a>
+            <a href={"/blog"}>Read the blogs</a>
           </Button>
         </div>
       </div>

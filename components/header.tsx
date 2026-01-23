@@ -1,9 +1,11 @@
 "use client";
 import React from "react";
+import Image from "next/image";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MenuToggleIcon } from "@/components/menu-toggle-icon";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 
 export function Header() {
   const [open, setOpen] = React.useState(false);
@@ -27,7 +29,7 @@ export function Header() {
 
   const handleSmoothScroll = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    href: string
+    href: string,
   ) => {
     e.preventDefault();
     const targetId = href.replace("#", "");
@@ -77,13 +79,11 @@ export function Header() {
     <header
       className={cn(
         "sticky top-0 w-full border-transparent border-b z-1000 bg-background/95 supports-[backdrop-filter]:bg-background/50 border-border backdrop-blur-lg transition-transform duration-300",
-        isHidden ? "-translate-y-full" : "translate-y-0"
+        isHidden ? "-translate-y-full" : "translate-y-0",
       )}
     >
       <nav className="mx-auto flex h-14 w-full items-center justify-between p-10 px-5 md:px-10">
-        <div className="hover:bg-accent rounded-md">
-          <WordmarkIcon className="h-4" />
-        </div>
+        <Logo className="-ml-16" />
         <div className="hidden items-center gap-2 md:flex">
           {links.map((link) => (
             <a
@@ -95,8 +95,15 @@ export function Header() {
               {link.label}
             </a>
           ))}
-          <Button variant="outline">Sign In</Button>
-          <Button>Get Started</Button>
+          <Button
+            variant="outline"
+            asChild
+          >
+            <Link href="/sign-in">Sign In</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/sign-up">Get Started</Link>
+          </Button>
         </div>
         <Button
           size="icon"
@@ -137,10 +144,16 @@ export function Header() {
           <Button
             variant="outline"
             className="w-full bg-transparent"
+            asChild
           >
-            Sign In
+            <Link href="/sign-in">Sign In</Link>
           </Button>
-          <Button className="w-full">Get Started</Button>
+          <Button
+            className="w-full"
+            asChild
+          >
+            <Link href="/sign-up">Get Started</Link>
+          </Button>
         </div>
       </MobileMenu>
     </header>
@@ -159,7 +172,7 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
       id="mobile-menu"
       className={cn(
         "bg-background/95 supports-[backdrop-filter]:bg-background/50 backdrop-blur-lg",
-        "fixed top-14 right-0 bottom-0 left-0 z-40 flex flex-col overflow-hidden border-y md:hidden"
+        "fixed top-14 right-0 bottom-0 left-0 z-40 flex flex-col overflow-hidden border-y md:hidden",
       )}
     >
       <div
@@ -167,31 +180,23 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
         className={cn(
           "data-[slot=open]:animate-in data-[slot=open]:zoom-in-97 ease-out",
           "size-full p-4",
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
-export const WordmarkIcon = (props: React.ComponentProps<"svg">) => (
-  <svg
-    viewBox="0 0 120 24"
-    fill="currentColor"
-    {...props}
-  >
-    <text
-      x="0"
-      y="18"
-      fontSize="32"
-      fontWeight="bold"
-      fontFamily="system-ui, -apple-system, sans-serif"
-    >
-      everlore
-    </text>
-  </svg>
+export const Logo = ({ className }: { className?: string }) => (
+  <Image
+    src="/logo.png"
+    alt="Everlore"
+    width={100}
+    height={100}
+    className={cn("h-44 w-auto", className)}
+  />
 );

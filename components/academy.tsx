@@ -82,8 +82,8 @@ export function Academy() {
           <div className="border-border/50 relative rounded-3xl border p-2 md:p-3 lg:col-span-2 mt-6 md:mt-0">
             <div className="bg-gradient-to-b aspect-76/59 relative rounded-2xl from-zinc-300 to-transparent p-px dark:from-zinc-700">
               <img
-                src="/academy.avif"
-                className="rounded-[15px] shadow"
+                src="/hero-slider-images/young-student-learning-library.jpg"
+                className="rounded-[15px] shadow object-cover w-full h-full"
                 alt="payments illustration light"
                 width={1207}
                 height={929}

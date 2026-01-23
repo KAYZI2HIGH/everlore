@@ -1,6 +1,7 @@
 import Image from "next/image";
 import React from "react";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 const AboutSection = () => {
   return (
@@ -25,7 +26,7 @@ const AboutSection = () => {
           the gap between learning and real-world application, helping
           individuals and businesses grow through intelligent digital solutions
         </p>
-        <Button className="self-center md:self-start">Explore Services</Button>
+        <Button className="self-center md:self-start" asChild><Link href="#features">Explore Services</Link></Button>
         <div className="grid grid-cols-6 gap-3 md:gap-5 items-center md:items-start justify-between mt-8">
           <div className="space-y-2 text-center col-span-3">
             <h1 className="text-4xl text-[#8DC63F] font-semibold">200+</h1>

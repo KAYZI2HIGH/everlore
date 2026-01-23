@@ -1,24 +1,19 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
-import {
-  Briefcase,
-  Layout,
-  Pointer,
-  Ratio,
-  VideoIcon,
-  Zap,
-} from "lucide-react";
+import { Briefcase, Pointer, Ratio, VideoIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Academy } from "./academy";
 import { cn } from "@/lib/utils";
+import { Academy } from "./academy";
+import Link from "next/link";
 
 interface TabContent {
   badge: string;
   title: string;
   description: string;
   list?: string[];
-  buttonText: string;
+  buttonText?: string;
+  buttonHref?: string;
   imageSrc: string;
   imageAlt: string;
 }
@@ -63,7 +58,8 @@ const Feature = ({
           "Tools, systems, and growth frameworks",
         ],
         buttonText: "Read the Blog",
-        imageSrc: "/resources.webp",
+        buttonHref: "/blog",
+        imageSrc: "/hero-slider-images/young-student-working-assignment.jpg",
         imageAlt: "placeholder",
       },
     },
@@ -81,8 +77,7 @@ const Feature = ({
           "Creative and technical skills",
           "Knowledge-based services",
         ],
-        buttonText: "See Tools",
-        imageSrc: "/digital-service.png",
+        imageSrc: "/hero-slider-images/study-group-african-people.jpg",
         imageAlt: "placeholder",
       },
     },
@@ -96,7 +91,8 @@ const Feature = ({
         description:
           "Everlore Multimedia will provide reliable printing and publishing services for individuals and businesses-designed for quality, efficiency, and scale.",
         buttonText: "Learn More",
-        imageSrc: "/multimedia.jpg",
+        buttonHref: "/multimedia",
+        imageSrc: "/multimedia.png",
         imageAlt: "placeholder",
       },
     },
@@ -126,14 +122,15 @@ const Feature = ({
           defaultValue={tabs[0].value}
           className="mt-6 md:mt-8"
         >
-          <TabsList className="container grid grid-cols-2 md:grid-cols-4 items-center justify-center gap-2 md:gap-4 lg:gap-10  overflow-x-hidden px-2 md:px-4 lg:px-0">
+          <TabsList className="container grid grid-cols-2 md:grid-cols-4 items-center justify-center gap-2 md:gap-4 lg:gap-10  overflow-x-hidden px-2 md:px-4 lg:px-0 max-w-6xl mx-auto">
             {tabs.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
                 className="flex items-center gap-2 rounded-xl px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-semibold text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary whitespace-nowrap"
               >
-                {tab.icon} <span className="max-w-lg truncate">{tab.label}</span>
+                {tab.icon}{" "}
+                <span className="max-w-lg truncate">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -143,16 +140,20 @@ const Feature = ({
                 key={tab.value}
                 value={tab.value}
                 className={cn(
-                  typeof tab.content === "object" &&
-                    tab.content &&
-                    "title" in tab?.content
-                    ? "grid place-items-center gap-20 lg:grid-cols-2 lg:gap-10"
-                    : ""
+                  (
+                    typeof tab.content === "object" &&
+                      tab.content &&
+                      "title" in tab?.content
+                  ) ?
+                    "grid place-items-center gap-20 lg:grid-cols-2 lg:gap-10"
+                  : "",
                 )}
               >
-                {typeof tab.content === "object" &&
-                tab.content &&
-                "title" in tab?.content ? (
+                {(
+                  typeof tab.content === "object" &&
+                  tab.content &&
+                  "title" in tab?.content
+                ) ?
                   <>
                     <div className="flex flex-col gap-5">
                       <Badge
@@ -181,12 +182,17 @@ const Feature = ({
                           </ul>
                         </div>
                       )}
-                      <Button
-                        className="mt-2.5 w-fit gap-2 text-xs md:text-sm"
-                        size="lg"
-                      >
-                        {tab.content.buttonText}
-                      </Button>
+                      {tab.content.buttonText && tab.content.buttonHref && (
+                        <Button
+                          className="mt-2.5 w-fit gap-2 text-xs md:text-sm"
+                          size="lg"
+                          asChild
+                        >
+                          <Link href={tab.content.buttonHref}>
+                            {tab.content.buttonText}
+                          </Link>
+                        </Button>
+                      )}
                     </div>
                     <img
                       src={tab.content.imageSrc}
@@ -194,9 +200,7 @@ const Feature = ({
                       className="rounded-xl w-full max-w-sm md:max-w-none"
                     />
                   </>
-                ) : (
-                  tab.content
-                )}
+                : tab.content}
               </TabsContent>
             ))}
           </div>

@@ -8,6 +8,7 @@ import {
   TwitterIcon,
   YoutubeIcon,
 } from "lucide-react";
+import { Logo } from "./header";
 
 export function MinimalFooter() {
   const year = new Date().getFullYear();
@@ -97,13 +98,8 @@ export function MinimalFooter() {
         <div className="bg-border absolute inset-x-0 h-px w-full" />
         <div className="grid max-w-4xl grid-cols-2 md:grid-cols-6 gap-3 md:gap-6 p-3 md:p-4">
           <div className="col-span-2 md:col-span-4 flex flex-col gap-3 md:gap-5">
-            <a
-              href="#"
-              className="w-max opacity-25"
-            >
-              <Grid2X2Plus className="size-6 md:size-8" />
-            </a>
-            <p className="text-muted-foreground max-w-sm font-mono text-xs md:text-sm text-balance">
+           <Logo className="h-34 w-54 -ml-10"/>
+            <p className="text-muted-foreground max-w-sm font-mono text-xs md:text-sm text-balance -mt-10">
               Empowering growth through knowledge and digital innovation. Build
               practical skills, create sustainable income.
             </p>
