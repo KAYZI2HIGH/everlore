@@ -2,6 +2,9 @@
 
 import { client } from "@/lib/sanity";
 import { auth } from "@/lib/auth";
+import imageUrlBuilder from "@sanity/image-url";
+
+const builder = imageUrlBuilder(client);
 
 export async function getUserByEmail(email: string) {
   try {
@@ -207,5 +210,199 @@ export async function enrollCourse(courseId: string) {
     return {
       error: error instanceof Error ? error.message : "An error occurred",
     };
+  }
+}
+
+// Course-related actions
+export async function getAllCourses() {
+  try {
+    const courses = await client.fetch(
+      `*[_type == "course"] | order(createdAt desc) {
+        _id,
+        title,
+        slug,
+        description,
+        image,
+        price,
+        instructor,
+        category,
+        level,
+        duration,
+        students,
+        rating,
+        videoUrl,
+        learningPoints,
+        "highlights": highlights[]{title},
+        "modules": modules[]{title, lessons, duration},
+        "faqs": faqs[]{question, answer},
+        "reviews": reviews[]{author, rating, text},
+        createdAt
+      }`,
+    );
+    return courses.map((course: any) => ({
+      ...course,
+      image: course.image ? builder.image(course.image).url() : "/academy.avif",
+    }));
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return [];
+  }
+}
+
+export async function getCoursesByCategory(category: string) {
+  try {
+    const courses = await client.fetch(
+      `*[_type == "course" && category == $category] | order(createdAt desc) {
+        _id,
+        title,
+        slug,
+        description,
+        image,
+        price,
+        instructor,
+        category,
+        level,
+        duration,
+        students,
+        rating,
+        videoUrl,
+        learningPoints,
+        "highlights": highlights[]{title},
+        "modules": modules[]{title, lessons, duration},
+        "faqs": faqs[]{question, answer},
+        "reviews": reviews[]{author, rating, text},
+        createdAt
+      }`,
+      { category },
+    );
+    return courses.map((course: any) => ({
+      ...course,
+      image: course.image ? builder.image(course.image).url() : "/academy.avif",
+    }));
+  } catch (error) {
+    console.error("Error fetching courses by category:", error);
+    return [];
+  }
+}
+
+export async function searchCourses(searchTerm: string) {
+  try {
+    const courses = await client.fetch(
+      `*[_type == "course" && (title match $searchTerm || description match $searchTerm || instructor match $searchTerm)] | order(createdAt desc) {
+        _id,
+        title,
+        slug,
+        description,
+        image,
+        price,
+        instructor,
+        category,
+        level,
+        duration,
+        students,
+        rating,
+        videoUrl,
+        learningPoints,
+        "highlights": highlights[]{title},
+        "modules": modules[]{title, lessons, duration},
+        "faqs": faqs[]{question, answer},
+        "reviews": reviews[]{author, rating, text},
+        createdAt
+      }`,
+      { searchTerm: `*${searchTerm}*` },
+    );
+    return courses.map((course: any) => ({
+      ...course,
+      image: course.image ? builder.image(course.image).url() : "/academy.avif",
+    }));
+  } catch (error) {
+    console.error("Error searching courses:", error);
+    return [];
+  }
+}
+
+export async function getCourseBySlug(slug: string) {
+  try {
+    const course = await client.fetch(
+      `*[_type == "course" && slug.current == $slug][0] {
+        _id,
+        title,
+        slug,
+        description,
+        image,
+        price,
+        instructor,
+        category,
+        level,
+        duration,
+        students,
+        rating,
+        videoUrl,
+        learningPoints,
+        "highlights": highlights[]{title},
+        "modules": modules[]{title, lessons, duration},
+        "faqs": faqs[]{question, answer},
+        "reviews": reviews[]{author, rating, text},
+        createdAt
+      }`,
+      { slug },
+    );
+    if (!course) return null;
+    return {
+      ...course,
+      image: course.image ? builder.image(course.image).url() : "/academy.avif",
+    };
+  } catch (error) {
+    console.error("Error fetching course by slug:", error);
+    return null;
+  }
+}
+
+export async function getCourseById(courseId: string) {
+  try {
+    const course = await client.fetch(
+      `*[_type == "course" && _id == $courseId][0] {
+        _id,
+        title,
+        slug,
+        description,
+        image,
+        price,
+        instructor,
+        category,
+        level,
+        duration,
+        students,
+        rating,
+        videoUrl,
+        learningPoints,
+        "highlights": highlights[]{title},
+        "modules": modules[]{title, lessons, duration},
+        "faqs": faqs[]{question, answer},
+        "reviews": reviews[]{author, rating, text},
+        createdAt
+      }`,
+      { courseId },
+    );
+    if (!course) return null;
+    return {
+      ...course,
+      image: course.image ? builder.image(course.image).url() : "/academy.avif",
+    };
+  } catch (error) {
+    console.error("Error fetching course:", error);
+    return null;
+  }
+}
+
+export async function getUniqueCategories() {
+  try {
+    const categories = await client.fetch(
+      `array::unique(*[_type == "course"].category)`,
+    );
+    return (categories || []).sort();
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
   }
 }

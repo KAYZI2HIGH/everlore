@@ -28,7 +28,7 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
 
   const handleLogout = async () => {
-    await signOut({ redirect: true, redirectUrl: "/sign-in" });
+    await signOut({ redirect: true, redirectTo: "/sign-in" });
   };
 
   return (
@@ -38,7 +38,10 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
         {/* User Info Header */}
         <DropdownMenuLabel className="flex items-start gap-3 p-4">
           <img
-            src={session?.user?.image || "https://api.dicebear.com/7.x/avataaars/svg?seed=User"}
+            src={
+              session?.user?.image ||
+              "https://api.dicebear.com/7.x/avataaars/svg?seed=User"
+            }
             alt="Avatar"
             width={40}
             height={40}
@@ -111,7 +114,10 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
             asChild
           >
             <EditProfileDialog>
-              <Button variant="ghost" className="w-full justify-start px-2 flex gap-2">
+              <Button
+                variant="ghost"
+                className="w-full justify-start px-2 flex gap-2"
+              >
                 <User
                   size={16}
                   strokeWidth={2}
@@ -120,9 +126,8 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
                 />
                 <span>Edit Profile</span>
               </Button>
-          </EditProfileDialog>
+            </EditProfileDialog>
           </DropdownMenuItem>
-         
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />

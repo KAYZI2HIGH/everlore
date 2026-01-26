@@ -1,5 +1,6 @@
 "use client";
-
+import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 import { useCharacterLimit } from "@/hooks/use-character-limit";
 import { useImageUpload } from "@/hooks/use-image-upload";
 import {
@@ -25,23 +26,84 @@ export default function EditProfileDialog({
   children: React.ReactNode;
 }) {
   const id = useId();
+  const { data: session } = useSession();
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    location: "",
+    phone: "",
+    title: "",
+    company: "",
+    skills: "",
+    experience: "",
+    portfolio: "",
+    github: "",
+    linkedin: "",
+    twitter: "",
+    bio: "",
+  });
+
   const maxLength = 200;
   const {
-    value,
+    value: bioValue,
     characterCount,
-    handleChange,
+    handleChange: handleBioChange,
     maxLength: limit,
   } = useCharacterLimit({
     maxLength,
-    initialValue:
-      "Passionate about learning and growing. Currently exploring web development and automation.",
+    initialValue: formData.bio || "Passionate about learning and growing...",
   });
+
+  // Load user data from session on mount
+  useEffect(() => {
+    if (session?.user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: session?.user?.name || "",
+        email: session?.user?.email || "",
+      }));
+    }
+  }, [session]);
 
   const { previewUrl, fileInputRef, handleThumbnailClick, handleFileChange } =
     useImageUpload();
 
   const profileImage =
-    previewUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=User";
+    previewUrl ||
+    session?.user?.image ||
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=User";
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { id: fieldId, value } = e.target;
+    const fieldName = fieldId.replace(`${id}-`, "");
+
+    if (fieldName === "bio") {
+      handleBioChange(e);
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
+  };
+
+  const handleSaveChanges = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: Implement updateUserProfile server action in lib/actions/sanity.actions.ts
+      console.log("Saving profile:", formData);
+      // This will call a server action to update Sanity user document
+      alert("Profile updates will be saved once server action is created");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Dialog>
@@ -101,7 +163,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-name`}
                       placeholder="John Learner"
-                      defaultValue="John Learner"
+                      value={formData.name}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -116,7 +179,9 @@ export default function EditProfileDialog({
                       id={`${id}-email`}
                       type="email"
                       placeholder="john@example.com"
-                      defaultValue="john.learner@everlore.com"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      disabled
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -133,7 +198,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-location`}
                       placeholder="City, Country"
-                      defaultValue="Lagos, Nigeria"
+                      value={formData.location}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -147,6 +213,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-phone`}
                       placeholder="+234..."
+                      value={formData.phone}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -171,7 +239,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-title`}
                       placeholder="E.g. Software Developer, Designer"
-                      defaultValue="Full Stack Developer"
+                      value={formData.title}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -185,7 +254,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-company`}
                       placeholder="Your company name"
-                      defaultValue="Tech Startup Inc."
+                      value={formData.company}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -202,7 +272,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-skills`}
                       placeholder="E.g. React, Node.js, Python"
-                      defaultValue="React, JavaScript, UI/UX"
+                      value={formData.skills}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -216,7 +287,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-experience`}
                       placeholder="E.g. 3 years"
-                      defaultValue="2 years"
+                      value={formData.experience}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -241,6 +313,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-portfolio`}
                       placeholder="https://yourportfolio.com"
+                      value={formData.portfolio}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -254,6 +328,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-github`}
                       placeholder="https://github.com/username"
+                      value={formData.github}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -270,6 +346,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-linkedin`}
                       placeholder="https://linkedin.com/in/username"
+                      value={formData.linkedin}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -283,6 +361,8 @@ export default function EditProfileDialog({
                     <Input
                       id={`${id}-twitter`}
                       placeholder="https://twitter.com/username"
+                      value={formData.twitter}
+                      onChange={handleInputChange}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -305,8 +385,8 @@ export default function EditProfileDialog({
                 <Textarea
                   id={`${id}-bio`}
                   placeholder="Tell us about your learning goals and interests..."
-                  value={value}
-                  onChange={handleChange}
+                  value={bioValue}
+                  onChange={handleInputChange}
                   maxLength={limit}
                   className="bg-slate-50 border-slate-200 resize-none"
                   rows={4}
@@ -328,11 +408,13 @@ export default function EditProfileDialog({
               Cancel
             </Button>
           </DialogClose>
-          <DialogClose asChild>
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-              Save Changes
-            </Button>
-          </DialogClose>
+          <Button
+            onClick={handleSaveChanges}
+            disabled={isLoading}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            {isLoading ? "Saving..." : "Save Changes"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -25,8 +25,18 @@ export default {
     },
     {
       name: "image",
-      title: "Course Image",
+      title: "Course Thumbnail",
+      type: "image",
+      options: {
+        hotspot: true,
+      },
+    },
+    {
+      name: "videoUrl",
+      title: "Course Video URL",
       type: "url",
+      description:
+        "The video URL for enrolled students. Supports YouTube, Vimeo, etc.",
     },
     {
       name: "price",
@@ -91,6 +101,108 @@ export default {
       name: "updatedAt",
       title: "Updated At",
       type: "datetime",
+    },
+    {
+      name: "learningPoints",
+      title: "What Students Will Learn",
+      type: "array",
+      of: [{ type: "string" }],
+      description: "List of key learning outcomes",
+    },
+    {
+      name: "highlights",
+      title: "Course Highlights",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            {
+              name: "title",
+              type: "string",
+            },
+          ],
+        },
+      ],
+      description: "Key features of the course",
+    },
+    {
+      name: "modules",
+      title: "Course Curriculum",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            {
+              name: "title",
+              title: "Module Title",
+              type: "string",
+            },
+            {
+              name: "lessons",
+              title: "Number of Lessons",
+              type: "number",
+            },
+            {
+              name: "duration",
+              title: "Duration",
+              type: "string",
+              description: "e.g., '2.5 hours'",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: "faqs",
+      title: "Frequently Asked Questions",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            {
+              name: "question",
+              title: "Question",
+              type: "string",
+            },
+            {
+              name: "answer",
+              title: "Answer",
+              type: "text",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: "reviews",
+      title: "Student Reviews",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            {
+              name: "author",
+              title: "Reviewer Name",
+              type: "string",
+            },
+            {
+              name: "rating",
+              title: "Rating",
+              type: "number",
+              validation: (Rule: any) => Rule.min(1).max(5),
+            },
+            {
+              name: "text",
+              title: "Review Text",
+              type: "text",
+            },
+          ],
+        },
+      ],
     },
   ],
 };

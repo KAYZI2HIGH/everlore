@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { BreadcrumbUI } from "@/components/BreadcrumbUi";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,164 +19,123 @@ import {
   ChevronDown,
   Award,
 } from "lucide-react";
+import { getCourseBySlug } from "@/lib/actions/sanity.actions";
+import { CourseDetailsSkeleton } from "@/components/skeletons/CourseDetailsSkeleton";
+
+interface Course {
+  _id: string;
+  title: string;
+  slug: { current: string };
+  description: string;
+  image: string;
+  price: number;
+  instructor: string;
+  category: string;
+  level: string;
+  duration: number;
+  students: number;
+  rating: number;
+  videoUrl?: string;
+  learningPoints?: string[];
+  highlights?: { title?: string }[];
+  modules?: { title?: string; lessons?: number; duration?: string }[];
+  faqs?: { question?: string; answer?: string }[];
+  reviews?: { author?: string; rating?: number; text?: string }[];
+  createdAt: string;
+}
 
 interface CourseModule {
-  id: string;
+  id?: string;
   title: string;
-  lessons: number;
-  duration: string;
+  lessons?: number;
+  duration?: string;
 }
 
 interface CourseReview {
-  id: string;
-  author: string;
-  rating: number;
-  text: string;
-  avatar: string;
+  id?: string;
+  author?: string;
+  rating?: number;
+  text?: string;
+  avatar?: string;
 }
 
 interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
+  id?: string;
+  question?: string;
+  answer?: string;
 }
 
 const CourseDetailsPage = () => {
+  const params = useParams();
+  const slug = params.slug as string;
+
+  const [course, setCourse] = useState<Course | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
   const [cartAdded, setCartAdded] = useState(false);
-  const [isPurchased, setIsPurchased] = useState(false); // Track if user has bought course
-  const [courseProgress, setCourseProgress] = useState(45); // Course completion percentage
+  const [isPurchased, setIsPurchased] = useState(false);
+  const [courseProgress, setCourseProgress] = useState(45);
 
-  // Mock course data
-  const course = {
-    id: "1",
-    title:
-      "Google Automation Masterclass: Build E-commerce Systems with AppSheet & Apps Script",
-    slug: "google-automation-masterclass",
-    price: 5000,
-    originalPrice: 8000,
-    rating: 4.8,
-    reviews: 342,
-    students: 4200,
-    thumbnail: "/academy.avif",
-    instructor: {
-      name: "Sarah Anderson",
-      bio: "Senior Developer & Google Automation Expert",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-    },
-    description:
-      "Learn to build powerful e-commerce systems without coding. Master AppSheet and Google Apps Script to automate business processes and scale your operations.",
-    language: "English",
-    level: "Beginner to Intermediate",
-    duration: "12 hours",
-    lastUpdated: "January 2025",
-    tags: ["Google Apps", "No-Code", "E-commerce", "Automation"],
-  };
+  // Fetch course by slug
+  useEffect(() => {
+    const fetchCourse = async () => {
+      setIsLoading(true);
+      const data = await getCourseBySlug(slug);
+      if (data) {
+        setCourse(data);
+      }
+      setIsLoading(false);
+    };
+    fetchCourse();
+  }, [slug]);
 
-  const learningPoints = [
-    "Build fully functional e-commerce systems with AppSheet",
-    "Master Google Apps Script for advanced automation",
-    "Create automated workflows and integrations",
-    "Implement payment processing and order management",
-    "Deploy production-ready applications",
-    "Scale your application to handle thousands of users",
-  ];
+  const learningPoints = course?.learningPoints || [];
+  const modules: CourseModule[] =
+    course?.modules?.map((m, idx) => ({
+      id: String(idx + 1),
+      title: m.title || `Module ${idx + 1}`,
+      lessons: m.lessons,
+      duration: m.duration,
+    })) || [];
 
-  const highlights = [
-    { icon: Clock, text: "12 hours of on-demand video" },
-    { icon: Play, text: "24 downloadable resources" },
-    { icon: Zap, text: "Lifetime access" },
-    { icon: Award, text: "Certificate of completion" },
-  ];
+  const faqs: FAQItem[] =
+    course?.faqs
+      ?.map((f, idx) => ({
+        id: String(idx + 1),
+        question: f.question || "",
+        answer: f.answer || "",
+      }))
+      .filter((f) => f.question) || [];
 
-  const modules: CourseModule[] = [
-    {
-      id: "1",
-      title: "1. Getting Started with AppSheet",
-      lessons: 8,
-      duration: "1.5 hours",
-    },
-    {
-      id: "2",
-      title: "2. Building Your First App",
-      lessons: 12,
-      duration: "2.5 hours",
-    },
-    {
-      id: "3",
-      title: "3. Google Apps Script Fundamentals",
-      lessons: 10,
-      duration: "2 hours",
-    },
-    {
-      id: "4",
-      title: "4. E-commerce Integration",
-      lessons: 15,
-      duration: "3 hours",
-    },
-    {
-      id: "5",
-      title: "5. Advanced Automation & Deployment",
-      lessons: 10,
-      duration: "2.5 hours",
-    },
-  ];
+  const reviews: CourseReview[] =
+    course?.reviews
+      ?.map((r, idx) => ({
+        id: String(idx + 1),
+        author: r.author || "",
+        rating: r.rating || 0,
+        text: r.text || "",
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(r.author || "anon")}`,
+      }))
+      .filter((r) => r.author) || [];
 
-  const faqs: FAQItem[] = [
-    {
-      id: "1",
-      question: "Do I need any coding experience?",
-      answer:
-        "No! This course is designed for beginners. We start from the basics and gradually move to advanced concepts. All you need is curiosity and willingness to learn.",
-    },
-    {
-      id: "2",
-      question: "How do I access the course materials?",
-      answer:
-        "Once enrolled, you'll get lifetime access to all video lectures, code files, and resources. You can download resources and watch videos anytime.",
-    },
-    {
-      id: "3",
-      question: "Is there a certificate upon completion?",
-      answer:
-        "Yes! You'll receive a Certificate of Completion that you can share on LinkedIn and other professional platforms.",
-    },
-    {
-      id: "4",
-      question: "What if I don't like the course?",
-      answer:
-        "We offer a 30-day money-back guarantee. If you're not satisfied, simply request a refund and we'll process it immediately.",
-    },
-  ];
+  const highlights = course?.highlights || [];
 
-  const reviews: CourseReview[] = [
-    {
-      id: "1",
-      author: "Ahmed Hassan",
-      rating: 5,
-      text: "Excellent course! Very comprehensive and well-structured. The instructor explains everything clearly.",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed",
-    },
-    {
-      id: "2",
-      author: "Grace Okonkwo",
-      rating: 5,
-      text: "This course completely changed how I approach business automation. Highly recommended!",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Grace",
-    },
-    {
-      id: "3",
-      author: "David Chen",
-      rating: 4,
-      text: "Great content and practical examples. Could use more real-world case studies.",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-    },
-  ];
+  if (isLoading) {
+    return <CourseDetailsSkeleton />;
+  }
 
-  const handleAddToCart = () => {
-    setCartAdded(true);
-    setTimeout(() => setCartAdded(false), 2000);
-  };
+  if (!course) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg text-slate-600 mb-4">Course not found</p>
+          <Link href="/academy/courses">
+            <Button>Back to Courses</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -196,28 +156,40 @@ const CourseDetailsPage = () => {
         <div className="lg:col-span-2 space-y-8">
           {/* Course Image */}
           <div className="relative w-full h-96 rounded-lg overflow-hidden bg-slate-200">
-            <Image
-              src={course.thumbnail}
-              alt={course.title}
-              fill
-              className="object-cover"
-            />
-            {isPurchased ?
-              <button className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors">
-                <Play className="w-16 h-16 text-white fill-white" />
-              </button>
-            : <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                <div className="text-center">
-                  <div className="bg-slate-900/80 rounded-lg p-8 max-w-sm">
-                    <p className="text-white text-lg font-semibold mb-2">
-                      This course is locked
-                    </p>
-                    <p className="text-slate-300 text-sm">
-                      Purchase the course to access the video content
-                    </p>
-                  </div>
-                </div>
+            {isPurchased && course.videoUrl ?
+              <div className="w-full h-full bg-black flex items-center justify-center">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={course.videoUrl}
+                  title={course.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
               </div>
+            : <>
+                <Image
+                  src={course.image || "/academy.avif"}
+                  alt={course.title}
+                  fill
+                  className="object-cover"
+                />
+                {!isPurchased && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="text-center">
+                      <div className="bg-slate-900/80 rounded-lg p-8 max-w-sm">
+                        <p className="text-white text-lg font-semibold mb-2">
+                          This course is locked
+                        </p>
+                        <p className="text-slate-300 text-sm">
+                          Purchase the course to access the video content
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             }
           </div>
 
@@ -232,36 +204,32 @@ const CourseDetailsPage = () => {
                 <span className="font-semibold text-slate-900">
                   {course.rating}
                 </span>
-                <span className="text-slate-600">
-                  ({course.reviews} reviews)
-                </span>
+                <span className="text-slate-600">(342 reviews)</span>
               </div>
               <div className="flex items-center gap-2 text-slate-600">
                 <Users className="w-5 h-5" />
-                <span>{course.students.toLocaleString()} students</span>
+                <span>{course.students?.toLocaleString() || "0"} students</span>
               </div>
               <div className="flex items-center gap-2 text-slate-600">
                 <Clock className="w-5 h-5" />
-                <span>{course.duration}</span>
+                <span>{course.duration} hours</span>
               </div>
             </div>
 
             {/* Instructor */}
             <div className="flex items-center gap-4 pb-6 border-b border-slate-200">
               <Image
-                src={course.instructor.avatar}
-                alt={course.instructor.name}
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Instructor"
+                alt={course.instructor}
                 width={48}
                 height={48}
                 className="rounded-full"
               />
               <div>
                 <p className="font-semibold text-slate-900">
-                  {course.instructor.name}
+                  {course.instructor}
                 </p>
-                <p className="text-sm text-slate-600">
-                  {course.instructor.bio}
-                </p>
+                <p className="text-sm text-slate-600">Course Instructor</p>
               </div>
             </div>
           </div>
@@ -275,10 +243,9 @@ const CourseDetailsPage = () => {
               {course.description}
             </p>
             <p className="text-slate-600 leading-relaxed">
-              This comprehensive course covers everything you need to know about
-              building scalable e-commerce systems using AppSheet and Google
-              Apps Script. From basic concepts to advanced implementation,
-              you'll gain hands-on experience with real-world projects.
+              Learn practical skills and gain hands-on experience with
+              real-world projects. This comprehensive course covers everything
+              you need to master this subject.
             </p>
           </div>
 
@@ -293,7 +260,7 @@ const CourseDetailsPage = () => {
                   key={idx}
                   className="flex gap-3"
                 >
-                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-1" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-1" />
                   <span className="text-slate-700">{point}</span>
                 </div>
               ))}
@@ -307,17 +274,18 @@ const CourseDetailsPage = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {highlights.map((highlight, idx) => {
-                const Icon = highlight.icon;
+                const Icons = [Clock, Play, Zap, Award];
+                const Icon = Icons[idx] || Zap;
+                const text =
+                  typeof highlight === "string" ? highlight : highlight?.title;
                 return (
                   <div
                     key={idx}
                     className="flex gap-3"
                   >
-                    <Icon className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+                    <Icon className="w-6 h-6 text-emerald-600 shrink-0" />
                     <div>
-                      <p className="font-semibold text-slate-900">
-                        {highlight.text}
-                      </p>
+                      <p className="font-semibold text-slate-900">{text}</p>
                     </div>
                   </div>
                 );
@@ -365,7 +333,9 @@ const CourseDetailsPage = () => {
                 >
                   <button
                     onClick={() =>
-                      setExpandedFAQ(expandedFAQ === faq.id ? null : faq.id)
+                      setExpandedFAQ(
+                        expandedFAQ === faq.id ? null : faq.id || null,
+                      )
                     }
                     className="w-full px-4 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
                   >
@@ -401,8 +371,8 @@ const CourseDetailsPage = () => {
                 >
                   <div className="flex gap-4 mb-3">
                     <Image
-                      src={review.avatar}
-                      alt={review.author}
+                      src={review.avatar || ""}
+                      alt={review.author || ""}
                       width={40}
                       height={40}
                       className="rounded-full"
@@ -416,7 +386,7 @@ const CourseDetailsPage = () => {
                           <Star
                             key={i}
                             className={`w-4 h-4 ${
-                              i < review.rating ?
+                              i < (review.rating || 0) ?
                                 "fill-yellow-400 text-yellow-400"
                               : "text-slate-300"
                             }`}
@@ -441,22 +411,21 @@ const CourseDetailsPage = () => {
                 <div className="mb-6">
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold text-slate-900">
-                      ₦{course.price.toLocaleString()}
-                    </span>
-                    <span className="text-lg line-through text-slate-400">
-                      ₦{course.originalPrice.toLocaleString()}
+                      ₦{course.price?.toLocaleString() || "0"}
                     </span>
                   </div>
                   <p className="text-sm text-emerald-600 font-semibold mt-2">
-                    Save ₦
-                    {(course.originalPrice - course.price).toLocaleString()}
+                    Special price
                   </p>
                 </div>
 
                 {/* CTA Buttons */}
                 <div className="space-y-3 mb-6">
                   <Button
-                    onClick={handleAddToCart}
+                    onClick={() => {
+                      setCartAdded(true);
+                      setTimeout(() => setCartAdded(false), 2000);
+                    }}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3"
                   >
                     {cartAdded ? "Added to cart ✓" : "Add to cart"}
@@ -528,9 +497,7 @@ const CourseDetailsPage = () => {
             <div className="space-y-4 border-t border-slate-200 pt-6">
               <div>
                 <p className="text-sm text-slate-600 mb-1">Language</p>
-                <p className="font-semibold text-slate-900">
-                  {course.language}
-                </p>
+                <p className="font-semibold text-slate-900">English</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600 mb-1">Level</p>
@@ -539,29 +506,14 @@ const CourseDetailsPage = () => {
               <div>
                 <p className="text-sm text-slate-600 mb-1">Duration</p>
                 <p className="font-semibold text-slate-900">
-                  {course.duration}
+                  {course.duration} hours
                 </p>
               </div>
               <div>
-                <p className="text-sm text-slate-600 mb-1">Last updated</p>
+                <p className="text-sm text-slate-600 mb-1">Category</p>
                 <p className="font-semibold text-slate-900">
-                  {course.lastUpdated}
+                  {course.category}
                 </p>
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div className="mt-6 pt-6 border-t border-slate-200">
-              <p className="text-sm text-slate-600 mb-3">Skills you'll gain</p>
-              <div className="flex flex-wrap gap-2">
-                {course.tags.map((tag, idx) => (
-                  <Badge
-                    key={idx}
-                    variant="outline"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
               </div>
             </div>
           </div>

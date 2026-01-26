@@ -2,9 +2,11 @@ import Image from "next/image";
 import { Star, Users, ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import Link from "next/link";
 
 export interface CourseCardProps {
   id: string;
+  slug: string;
   title: string;
   category: string;
   instructor: string;
@@ -19,6 +21,7 @@ export interface CourseCardProps {
 
 export function CourseCard({
   id,
+  slug,
   title,
   category,
   instructor,
@@ -59,7 +62,7 @@ export function CourseCard({
         </button>
 
         {/* Play Icon */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+        <Link href={`/academy/courses/${slug}`} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
             <div
               className="w-0 h-0 border-l-6 border-l-transparent border-r-0 border-t-3.5 border-t-transparent border-b-3.5 border-b-transparent ml-1"
@@ -72,15 +75,15 @@ export function CourseCard({
               }}
             />
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Content */}
       <div className="flex-1 p-4 flex flex-col">
         {/* Title */}
-        <h3 className="font-semibold text-slate-900 line-clamp-2 mb-3 group-hover:text-green-600 transition-colors">
+        <Link href={`/academy/courses/${slug}`} className="font-semibold text-slate-900 line-clamp-2 mb-3 group-hover:text-green-600 transition-colors">
           {title}
-        </h3>
+        </Link>
 
         {/* Category & Students */}
         <div className="flex items-center justify-between mb-3 text-xs">

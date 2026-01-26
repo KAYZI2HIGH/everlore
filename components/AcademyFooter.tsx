@@ -52,31 +52,6 @@ export default function AcademyFooter() {
   return (
     <footer className="bg-white text-slate-900 border-t border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Newsletter Section */}
-        <div className="mb-12 pb-12 border-b border-slate-200">
-          <div className="max-w-2xl">
-            <h3 className="text-2xl font-bold mb-2">Stay Updated</h3>
-            <p className="text-slate-600 mb-4">
-              Subscribe to our newsletter for the latest courses, tips, and
-              exclusive offers.
-            </p>
-            <form
-              onSubmit={handleNewsletterSubmit}
-              className="flex gap-2"
-            >
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                className="bg-slate-50 border-slate-300 text-slate-900"
-                required
-              />
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                Subscribe
-              </Button>
-            </form>
-          </div>
-        </div>
-
         {/* Links Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <div>
