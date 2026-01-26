@@ -99,24 +99,30 @@ const CartPage = () => {
     calculateTotals();
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="px-6 md:px-20 py-8">
+    <div className="min-h-screen bg-white">
+      {/* Breadcrumb */}
+      <div className="px-6 md:px-20 py-4 border-b border-slate-200">
         <BreadcrumbUI
           items={[
             { label: "Home", href: "/" },
             { label: "Cart", href: "/academy/cart" },
           ]}
         />
+      </div>
 
-        <div className="mt-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">
-            Shopping Cart
-          </h1>
-          <p className="text-sm text-slate-600 mb-8">
-            {cartItems.length} course{cartItems.length !== 1 ? "s" : ""} in cart
+      {/* Header Section */}
+      <div className="px-6 md:px-20 py-12 border-b border-slate-200">
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold text-slate-900">Shopping Cart</h1>
+          <p className="text-slate-600 text-base">
+            {cartItems.length} course{cartItems.length !== 1 ? "s" : ""} in your
+            cart
           </p>
         </div>
+      </div>
 
+      {/* Cart Content */}
+      <div className="px-6 md:px-20 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-6">
