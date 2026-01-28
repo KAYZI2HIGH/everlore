@@ -1,94 +1,114 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BreadcrumbUI } from "@/components/BreadcrumbUi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Heart } from "lucide-react";
+import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
+import { usePaystack } from "@/hooks/usePaystack";
+import { getCurrentUser } from "@/lib/actions/sanity.actions";
+import { toast } from "sonner";
 
 interface CartItem {
-  id: string;
+  _id: string;
   title: string;
   instructor: string;
-  thumbnail: string;
-  originalPrice: number;
+  image: string;
   price: number;
   rating: number;
-  reviews: number;
+  level: string;
+  category: string;
   students: number;
-  tags: Array<{ label: string; color: string }>;
-  language: string;
+  description: string;
 }
 
 const CartPage = () => {
+  const router = useRouter();
   const [couponCode, setCouponCode] = useState("");
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "1",
-      title: "Video Editing & VFX with CapCut",
-      instructor: "Osama Siddiqui",
-      thumbnail: "/academy.avif",
-      originalPrice: 10000,
-      price: 3000,
-      rating: 4.5,
-      reviews: 57,
-      students: 1470,
-      tags: [{ label: "Hot & New", color: "bg-red-100 text-red-700" }],
-      language: "English",
-    },
-    {
-      id: "2",
-      title: "Illustrator for Graphic Designers",
-      instructor: "Osapa Michael",
-      thumbnail: "/academy.avif",
-      originalPrice: 12700,
-      price: 2000,
-      rating: 4.6,
-      reviews: 18,
-      students: 618,
-      tags: [
-        { label: "Popular Course", color: "bg-orange-100 text-orange-700" },
-        {
-          label: "Ultimate Graphic Design Bundle",
-          color: "bg-yellow-100 text-yellow-700",
-        },
-      ],
-      language: "English",
-    },
-    {
-      id: "3",
-      title: "Ultimate Adobe Photoshop Training: From Beginner to Pro",
-      instructor: "Osapa Michael",
-      thumbnail: "/academy.avif",
-      originalPrice: 12700,
-      price: 2000,
-      rating: 4.5,
-      reviews: 90,
-      students: 3486,
-      tags: [
-        { label: "Highly Rated", color: "bg-purple-100 text-purple-700" },
-        {
-          label: "Ultimate Graphic Design Bundle",
-          color: "bg-yellow-100 text-yellow-700",
-        },
-      ],
-      language: "English",
-    },
-  ]);
+  const [togglingWishlist, setTogglingWishlist] = useState<string | null>(null);
+  const [removingFromCart, setRemovingFromCart] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const { cartItems, isLoading, removeFromCart, removeFromCartAsync } =
+    useCart();
+  const { isInWishlist, toggleWishlistAsync } = useWishlist();
+  const { initializePayment, isProcessing } = usePaystack();
 
-  const handleRemoveItem = (id: string) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getCurrentUser();
+      setUserEmail(user?.email || null);
+    };
+    fetchUser();
+  }, []);
+
+  const handleRemoveFromCart = async (courseId: string) => {
+    setRemovingFromCart(courseId);
+    try {
+      await removeFromCartAsync(courseId);
+    } finally {
+      setRemovingFromCart(null);
+    }
+  };
+
+  const handleToggleWishlist = async (courseId: string) => {
+    setTogglingWishlist(courseId);
+    try {
+      await toggleWishlistAsync(courseId);
+    } finally {
+      setTogglingWishlist(null);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!userEmail) {
+      toast.error("Please log in to checkout");
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      toast.error("Your cart is empty");
+      return;
+    }
+
+    try {
+      const courseIds = cartItems.map((item: CartItem) => item._id);
+      const total = cartItems.reduce(
+        (sum: number, item: CartItem) => sum + item.price,
+        0,
+      );
+
+      console.log("Starting checkout with:", { courseIds, total, userEmail });
+
+      await initializePayment({
+        email: userEmail,
+        amount: total,
+        courseIds,
+      });
+
+      console.log("Payment completed successfully");
+      toast.success("Payment successful! Courses added to your learning");
+      router.push("/academy/learning");
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast.error(error?.message || "Payment failed");
+    }
   };
 
   const calculateTotals = () => {
-    const originalTotal = cartItems.reduce(
-      (sum, item) => sum + item.originalPrice,
+    const originalTotal = cartItems.reduce((sum: number, item: CartItem) => {
+      // Assuming original price is 1.5x the current price
+      return sum + item.price * 1.5;
+    }, 0);
+    const currentTotal = cartItems.reduce(
+      (sum: number, item: CartItem) => sum + item.price,
       0,
     );
-    const currentTotal = cartItems.reduce((sum, item) => sum + item.price, 0);
     const discount = originalTotal - currentTotal;
     const discountPercent = Math.round((discount / originalTotal) * 100);
 
@@ -126,23 +146,46 @@ const CartPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-6">
-            {cartItems.length === 0 ?
-              <div className="bg-white rounded-lg p-12 text-center">
-                <p className="text-slate-600 mb-4">Your cart is empty</p>
+            {isLoading ?
+              <div className="text-center py-12">
+                <p className="text-slate-600">Loading cart...</p>
+              </div>
+            : cartItems.length === 0 ?
+              <div className="flex flex-col items-center justify-center py-16 gap-6">
+                <div className="relative w-64 h-48">
+                  <Image
+                    src="/empty-cart.svg"
+                    alt="Empty cart illustration"
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+                <div className="text-center space-y-3">
+                  <p className="text-slate-900 text-lg font-semibold">
+                    Your cart is empty
+                  </p>
+                  <p className="text-slate-600 text-sm max-w-md">
+                    Start exploring our courses and add them to your cart to get
+                    started on your learning journey.
+                  </p>
+                </div>
                 <Link href="/academy/courses">
-                  <Button>Continue Shopping</Button>
+                  <Button className="bg-emerald-600 hover:bg-emerald-700">
+                    Continue Shopping
+                  </Button>
                 </Link>
               </div>
-            : cartItems.map((item) => (
+            : cartItems.map((item: CartItem) => (
                 <div
-                  key={item.id}
+                  key={item._id}
                   className="bg-white rounded-lg p-6 border border-slate-200 hover:border-slate-300 transition-colors"
                 >
                   <div className="flex gap-4">
                     {/* Thumbnail */}
-                    <div className="relative w-32 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200">
+                    <div className="relative w-32 h-24 shrink-0 rounded-lg overflow-hidden bg-slate-200">
                       <Image
-                        src={item.thumbnail}
+                        src={item.image || "/academy.avif"}
                         alt={item.title}
                         fill
                         className="object-cover"
@@ -151,37 +194,34 @@ const CartPage = () => {
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-slate-900 mb-1 line-clamp-2">
-                        {item.title}
-                      </h3>
+                      <Link href={`/academy/courses`}>
+                        <h3 className="font-semibold text-slate-900 mb-1 line-clamp-2 hover:text-emerald-600 transition-colors">
+                          {item.title}
+                        </h3>
+                      </Link>
                       <p className="text-xs text-slate-600 mb-2">
                         By {item.instructor}
                       </p>
 
                       {/* Tags */}
                       <div className="flex flex-wrap gap-2 mb-3">
-                        {item.tags.map((tag, idx) => (
-                          <Badge
-                            key={idx}
-                            variant="outline"
-                            className={`text-xs ${tag.color}`}
-                          >
-                            {tag.label}
-                          </Badge>
-                        ))}
                         <Badge
                           variant="outline"
-                          className="text-xs"
+                          className="text-xs bg-slate-100"
                         >
-                          {item.language}
+                          📚 {item.category}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-slate-100"
+                        >
+                          {item.level}
                         </Badge>
                       </div>
 
                       {/* Stats */}
                       <div className="flex gap-3 text-xs text-slate-600 mb-3">
-                        <span>
-                          ⭐ {item.rating} ({item.reviews} reviews)
-                        </span>
+                        <span>⭐ {item.rating}</span>
                         <span>👥 {item.students} students</span>
                       </div>
 
@@ -189,7 +229,7 @@ const CartPage = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-sm line-through text-slate-400">
-                            ₦{item.originalPrice.toLocaleString()}
+                            ₦{(item.price * 1.5).toLocaleString()}
                           </span>
                           <span className="text-lg font-bold text-slate-900">
                             ₦{item.price.toLocaleString()}
@@ -198,15 +238,30 @@ const CartPage = () => {
 
                         <div className="flex gap-4 text-sm">
                           <button
-                            onClick={() => handleRemoveItem(item.id)}
-                            className="text-slate-500 hover:text-red-600 font-medium transition-colors flex items-center gap-1"
+                            onClick={() => handleRemoveFromCart(item._id)}
+                            disabled={removingFromCart === item._id}
+                            className="text-slate-500 hover:text-red-600 font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
                           >
                             <Trash2 className="w-4 h-4" />
-                            Remove
+                            {removingFromCart === item._id ?
+                              "Removing..."
+                            : "Remove"}
                           </button>
-                          <button className="text-slate-500 hover:text-red-600 font-medium transition-colors flex items-center gap-1">
-                            <Heart className="w-4 h-4" />
-                            Wishlist
+                          <button
+                            onClick={() => handleToggleWishlist(item._id)}
+                            disabled={togglingWishlist === item._id}
+                            className="text-slate-500 hover:text-red-600 font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
+                          >
+                            <Heart
+                              className={`w-4 h-4 transition-colors ${
+                                isInWishlist(item._id) ?
+                                  "fill-red-500 text-red-500"
+                                : ""
+                              }`}
+                            />
+                            {isInWishlist(item._id) ?
+                              "Remove from wishlist"
+                            : "Wishlist"}
                           </button>
                         </div>
                       </div>
@@ -256,8 +311,12 @@ const CartPage = () => {
               </div>
 
               {/* Checkout Button */}
-              <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 mb-4">
-                Checkout →
+              <Button
+                onClick={handleCheckout}
+                disabled={isProcessing || cartItems.length === 0}
+                className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 mb-4 disabled:opacity-50"
+              >
+                {isProcessing ? "Processing..." : "Checkout →"}
               </Button>
             </div>
           </div>

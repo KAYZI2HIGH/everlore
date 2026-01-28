@@ -15,8 +15,8 @@ export async function getUserByEmail(email: string) {
         email,
         image,
         enrolledCourses[] -> { _id, title, slug },
-        wishlist[] -> { _id, title },
-        cart[] -> { _id, title, price },
+        wishlist[] -> { _id, title, slug, instructor, price, rating, students, image, category, level, description },
+        cart[] -> { _id, title, price, instructor, image, rating, level, category, students, description },
         createdAt
       }`,
       { email },
@@ -404,5 +404,113 @@ export async function getUniqueCategories() {
   } catch (error) {
     console.error("Error fetching categories:", error);
     return [];
+  }
+}
+
+export async function enrollUserInCourses(courseIds: string[]) {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) {
+      console.error("❌ Not authenticated");
+      return { success: false, error: "Not authenticated" };
+    }
+
+    console.log("📝 Fetching user with email:", session.user.email);
+
+    const user = await client.fetch(
+      `*[_type == "user" && email == $email][0]`,
+      { email: session.user.email },
+    );
+
+    if (!user) {
+      console.error("❌ User not found:", session.user.email);
+      return { success: false, error: "User not found" };
+    }
+
+    console.log("✓ User found:", user._id);
+    console.log("📚 Enrolling user in courses:", courseIds);
+
+    // Add courses to enrolledCourses
+    const enrollmentRefs = courseIds.map((id) => ({
+      _type: "reference",
+      _ref: id,
+    }));
+
+    const result = await client
+      .patch(user._id)
+      .append("enrolledCourses", enrollmentRefs)
+      .set({ cart: [] }) // Clear cart after enrollment
+      .commit();
+
+    console.log("✓ Enrollment committed to Sanity:", result._id);
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("❌ Enrollment error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "An error occurred",
+    };
+  }
+}
+
+export async function verifyPaystackPayment(reference: string) {
+  try {
+    console.log("🔍 Verifying payment with Paystack reference:", reference);
+
+    const response = await fetch(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      console.error(
+        "❌ Paystack API error:",
+        response.status,
+        response.statusText,
+      );
+      return {
+        success: false,
+        error: `HTTP ${response.status}: Failed to verify payment`,
+      };
+    }
+
+    const data = await response.json();
+
+    console.log("✓ Paystack API response:", {
+      status: data.status,
+      transactionStatus: data.data?.status,
+      reference: data.data?.reference,
+      amount: data.data?.amount,
+    });
+
+    // IMPORTANT: According to Paystack docs:
+    // - response.status indicates if the API call was successful
+    // - response.data.status indicates if the transaction was successful
+    if (!data.status) {
+      console.error("❌ Paystack API call failed");
+      return { success: false, error: "Paystack API call was not successful" };
+    }
+
+    if (data.data?.status !== "success") {
+      console.error("❌ Transaction status is not success:", data.data?.status);
+      return {
+        success: false,
+        error: `Transaction status: ${data.data?.status}`,
+      };
+    }
+
+    console.log("✓ Payment verified successfully!");
+    return { success: true, data: data.data };
+  } catch (error) {
+    console.error("❌ Error verifying payment:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Verification failed",
+    };
   }
 }

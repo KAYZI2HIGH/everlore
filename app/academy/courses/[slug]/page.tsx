@@ -18,9 +18,13 @@ import {
   ThumbsUp,
   ChevronDown,
   Award,
+  Heart,
 } from "lucide-react";
-import { getCourseBySlug } from "@/lib/actions/sanity.actions";
+import { getCourseBySlug, getCurrentUser } from "@/lib/actions/sanity.actions";
 import { CourseDetailsSkeleton } from "@/components/skeletons/CourseDetailsSkeleton";
+import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
+import { toast } from "sonner";
 
 interface Course {
   _id: string;
@@ -72,22 +76,73 @@ const CourseDetailsPage = () => {
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
-  const [cartAdded, setCartAdded] = useState(false);
   const [isPurchased, setIsPurchased] = useState(false);
   const [courseProgress, setCourseProgress] = useState(45);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [addingToWishlist, setAddingToWishlist] = useState(false);
 
-  // Fetch course by slug
+  const { addToCartAsync } = useCart();
+  const { isInWishlist, toggleWishlistAsync } = useWishlist();
+
+  // Fetch course by slug and check if user is enrolled
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchCourseAndCheckEnrollment = async () => {
       setIsLoading(true);
-      const data = await getCourseBySlug(slug);
-      if (data) {
-        setCourse(data);
+      try {
+        const data = await getCourseBySlug(slug);
+        if (data) {
+          setCourse(data);
+
+          // Check if user is already enrolled
+          const user = await getCurrentUser();
+          if (user?.enrolledCourses) {
+            const isEnrolled = user.enrolledCourses.some(
+              (enrolled: any) =>
+                enrolled._ref === data._id || enrolled._id === data._id,
+            );
+            setIsPurchased(isEnrolled);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching course:", error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
-    fetchCourse();
+    fetchCourseAndCheckEnrollment();
   }, [slug]);
+
+  const handleAddToCart = async () => {
+    if (!course) return;
+    setAddingToCart(true);
+    try {
+      await addToCartAsync(course._id);
+      toast.success("Course added to cart!");
+    } catch (error: any) {
+      console.error("Error adding to cart:", error);
+      toast.error(error?.message || "Failed to add course to cart");
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!course) return;
+    setAddingToWishlist(true);
+    try {
+      await toggleWishlistAsync(course._id);
+      if (isInWishlist(course._id)) {
+        toast.success("Removed from wishlist!");
+      } else {
+        toast.success("Added to wishlist!");
+      }
+    } catch (error: any) {
+      console.error("Error toggling wishlist:", error);
+      toast.error(error?.message || "Failed to update wishlist");
+    } finally {
+      setAddingToWishlist(false);
+    }
+  };
 
   const learningPoints = course?.learningPoints || [];
   const modules: CourseModule[] =
@@ -422,19 +477,30 @@ const CourseDetailsPage = () => {
                 {/* CTA Buttons */}
                 <div className="space-y-3 mb-6">
                   <Button
-                    onClick={() => {
-                      setCartAdded(true);
-                      setTimeout(() => setCartAdded(false), 2000);
-                    }}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3"
+                    onClick={handleAddToCart}
+                    disabled={addingToCart}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 disabled:opacity-50"
                   >
-                    {cartAdded ? "Added to cart ✓" : "Add to cart"}
+                    {addingToCart ? "Adding to cart..." : "Add to cart"}
                   </Button>
                   <Button
+                    onClick={handleToggleWishlist}
+                    disabled={addingToWishlist}
                     variant="outline"
-                    className="w-full py-3 border-slate-300"
+                    className="w-full py-3 border-slate-300 disabled:opacity-50"
                   >
-                    Add to wishlist
+                    <Heart
+                      className={`w-4 h-4 mr-2 ${
+                        isInWishlist(course._id) ?
+                          "fill-red-500 text-red-500"
+                        : ""
+                      }`}
+                    />
+                    {addingToWishlist ?
+                      "Updating..."
+                    : isInWishlist(course._id) ?
+                      "Remove from wishlist"
+                    : "Add to wishlist"}
                   </Button>
                 </div>
               </>
@@ -453,26 +519,11 @@ const CourseDetailsPage = () => {
                 </div>
 
                 {/* Access Course Button */}
-                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 mb-3">
-                  Continue Learning →
-                </Button>
-
-                {/* Progress */}
-                <div className="mb-6 pb-6 border-b border-slate-200">
-                  <p className="text-sm font-semibold text-slate-900 mb-2">
-                    Your Progress
-                  </p>
-                  <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
-                    <div
-                      className="bg-emerald-600 h-2 rounded-full transition-all"
-                      style={{ width: `${courseProgress}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-slate-600">
-                    {courseProgress}% complete
-                  </p>
-                </div>
-
+                <Link href="/academy/learning">
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 mb-3">
+                    Continue Learning →
+                  </Button>
+                </Link>
                 {/* Download Resources */}
                 <Button
                   variant="outline"

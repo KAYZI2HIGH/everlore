@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { toast } from "sonner";
 import { BreadcrumbUI } from "@/components/BreadcrumbUi";
 import { CourseCard } from "@/components/CourseCard";
 import { Input } from "@/components/ui/input";
@@ -13,9 +14,11 @@ import {
   searchCourses,
   getCoursesByCategory,
   getUniqueCategories,
+  getCurrentUser,
 } from "@/lib/actions/sanity.actions";
 import { CourseListSkeleton } from "@/components/skeletons/CourseCardSkeleton";
 import { CategoryFilterSkeleton } from "@/components/skeletons/CategoryFilterSkeleton";
+import { useCart } from "@/hooks/useCart";
 
 interface Course {
   _id: string;
@@ -40,26 +43,50 @@ const CoursePage = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
+  const { addToCart, isAddingToCart, cartItems } = useCart();
 
-  // Fetch categories and courses on mount
+  // Get cart item IDs
+  const cartItemIds = cartItems?.map((item: any) => item._id) || [];
+
+  // Fetch categories, courses, and user enrollment data on mount
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const [courseData, categoryData] = await Promise.all([
-        getAllCourses(),
-        getUniqueCategories(),
-      ]);
-      setCourses(courseData);
-      setFilteredCourses(courseData);
-      setCategories(categoryData);
-      setIsLoading(false);
+      try {
+        const [courseData, categoryData, userData] = await Promise.all([
+          getAllCourses(),
+          getUniqueCategories(),
+          getCurrentUser(),
+        ]);
+        setCourses(courseData);
+        setFilteredCourses(courseData);
+        setCategories(categoryData);
+
+        // Get enrolled course IDs
+        if (userData?.enrolledCourses) {
+          const enrolled = userData.enrolledCourses.map((course: any) =>
+            course._ref || course._id,
+          );
+          setEnrolledCourseIds(enrolled);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchData();
   }, []);
 
-  // Filter courses based on categories and search
+  // Filter courses based on categories, search, and enrollment status
   useEffect(() => {
     let filtered = courses;
+
+    // Filter out purchased courses
+    filtered = filtered.filter(
+      (course) => !enrolledCourseIds.includes(course._id),
+    );
 
     // Filter by categories
     if (selectedCategories.length > 0) {
@@ -79,7 +106,7 @@ const CoursePage = () => {
     }
 
     setFilteredCourses(filtered);
-  }, [selectedCategories, searchTerm, courses]);
+  }, [selectedCategories, searchTerm, courses, enrolledCourseIds]);
 
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) =>
@@ -100,9 +127,23 @@ const CoursePage = () => {
     setFilteredCourses(courses);
   };
 
-  const handleAddToCart = (courseId: string) => {
-    console.log("Added to cart:", courseId);
-    // Handle add to cart logic here
+  const handleAddToCart = async (courseId: string) => {
+    try {
+      await new Promise((resolve) => {
+        addToCart(courseId, {
+          onSuccess: () => {
+            toast.success("Course added to cart!");
+            resolve(null);
+          },
+          onError: (error: any) => {
+            toast.error(error?.message || "Failed to add course to cart");
+            resolve(null);
+          },
+        });
+      });
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    }
   };
 
   return (
@@ -255,23 +296,31 @@ const CoursePage = () => {
             <CourseListSkeleton />
           : filteredCourses.length > 0 ?
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCourses.map((course) => (
-                <CourseCard
-                  key={course._id}
-                  id={course._id}
-                  slug={course.slug.current}
-                  title={course.title}
-                  category={course.category}
-                  instructor={course.instructor}
-                  thumbnail={course.image}
-                  rating={course.rating}
-                  students={course.students}
-                  price={course.price}
-                  originalPrice={course.price * 1.5}
-                  isNew={false}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
+              {filteredCourses.map((course) => {
+                const isInCart = cartItemIds.includes(course._id);
+                return (
+                  <div
+                    key={course._id}
+                    className="relative"
+                  >
+                    <CourseCard
+                      id={course._id}
+                      slug={course.slug.current}
+                      title={course.title}
+                      category={course.category}
+                      instructor={course.instructor}
+                      thumbnail={course.image}
+                      rating={course.rating}
+                      students={course.students}
+                      price={course.price}
+                      originalPrice={course.price * 1.5}
+                      isNew={false}
+                      isInCart={isInCart}
+                      onAddToCart={() => handleAddToCart(course._id)}
+                    />
+                  </div>
+                );
+              })}
             </div>
           : <div className="flex flex-col items-center justify-center py-12 gap-6">
               <div className="relative w-64 h-44">

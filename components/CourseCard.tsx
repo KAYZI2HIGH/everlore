@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { Star, Users, ShoppingCart } from "lucide-react";
+import { Star, Users, ShoppingCart, Loader, Heart } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import Link from "next/link";
+import { useWishlist } from "@/hooks/useWishlist";
 
 export interface CourseCardProps {
   id: string;
@@ -16,6 +17,7 @@ export interface CourseCardProps {
   originalPrice: number;
   price: number;
   isNew?: boolean;
+  isInCart?: boolean;
   onAddToCart?: (courseId: string) => void;
 }
 
@@ -31,8 +33,10 @@ export function CourseCard({
   originalPrice,
   price,
   isNew = false,
+  isInCart = false,
   onAddToCart,
 }: CourseCardProps) {
+  const { isInWishlist, toggleWishlist } = useWishlist();
   return (
     <div className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-slate-200">
       {/* Image Container */}
@@ -57,12 +61,22 @@ export function CourseCard({
         </div>
 
         {/* Wishlist Icon */}
-        <button className="absolute top-3 right-3 bg-white rounded-full p-2 hover:bg-slate-100 transition-colors">
-          <Star className="w-5 h-5 text-slate-400" />
+        <button
+          onClick={() => toggleWishlist(id)}
+          className="absolute top-3 right-3 bg-white rounded-full p-2 hover:bg-slate-100 transition-colors z-10"
+        >
+          <Heart
+            className={`w-5 h-5 transition-colors ${
+              isInWishlist(id) ? "fill-red-500 text-red-500" : "text-slate-400"
+            }`}
+          />
         </button>
 
         {/* Play Icon */}
-        <Link href={`/academy/courses/${slug}`} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+        <Link
+          href={`/academy/courses/${slug}`}
+          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20"
+        >
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
             <div
               className="w-0 h-0 border-l-6 border-l-transparent border-r-0 border-t-3.5 border-t-transparent border-b-3.5 border-b-transparent ml-1"
@@ -81,7 +95,10 @@ export function CourseCard({
       {/* Content */}
       <div className="flex-1 p-4 flex flex-col">
         {/* Title */}
-        <Link href={`/academy/courses/${slug}`} className="font-semibold text-slate-900 line-clamp-2 mb-3 group-hover:text-green-600 transition-colors">
+        <Link
+          href={`/academy/courses/${slug}`}
+          className="font-semibold text-slate-900 line-clamp-2 mb-3 group-hover:text-green-600 transition-colors"
+        >
           {title}
         </Link>
 
@@ -116,13 +133,21 @@ export function CourseCard({
         </div>
 
         {/* Add to Cart Button */}
-        <Button
-          variant="outline"
-          className="w-full border-slate-300 hover:border-slate-400 text-slate-900"
-          onClick={() => onAddToCart?.(id)}
-        >
-          Add to cart
-        </Button>
+        {isInCart ?
+          <Button
+            disabled
+            className="w-full bg-slate-200 text-slate-600 cursor-not-allowed"
+          >
+            Already in cart
+          </Button>
+        : <Button
+            variant="outline"
+            className="w-full border-slate-300 hover:border-slate-400 text-slate-900"
+            onClick={() => onAddToCart?.(id)}
+          >
+            Add to cart
+          </Button>
+        }
       </div>
     </div>
   );

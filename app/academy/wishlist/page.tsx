@@ -6,97 +6,103 @@ import Link from "next/link";
 import { BreadcrumbUI } from "@/components/BreadcrumbUi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Trash2, ShoppingCart, Star } from "lucide-react";
+import { Search, Trash2, ShoppingCart } from "lucide-react";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useCart } from "@/hooks/useCart";
+import { toast } from "sonner";
 
 interface WishlistItem {
-  id: string;
+  _id: string;
   title: string;
-  slug: string;
+  slug: { current: string };
   instructor: string;
   price: number;
-  originalPrice: number;
   rating: number;
-  reviews: number;
   students: number;
-  thumbnail: string;
-  addedDate: string;
+  image: string;
+  category: string;
+  level: string;
+  description: string;
 }
 
 const WishlistPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([
-    {
-      id: "1",
-      title: "Google Automation Masterclass: Build E-commerce Systems",
-      slug: "google-automation-masterclass",
-      instructor: "Sarah Anderson",
-      price: 5000,
-      originalPrice: 8000,
-      rating: 4.8,
-      reviews: 342,
-      students: 4200,
-      thumbnail: "/academy.avif",
-      addedDate: "Jan 15, 2026",
-    },
-    {
-      id: "2",
-      title: "Advanced React & Next.js Development",
-      slug: "advanced-react-nextjs",
-      instructor: "John Developer",
-      price: 3500,
-      originalPrice: 6000,
-      rating: 4.9,
-      reviews: 528,
-      students: 5100,
-      thumbnail: "/academy.avif",
-      addedDate: "Jan 12, 2026",
-    },
-    {
-      id: "3",
-      title: "UI/UX Design Fundamentals",
-      slug: "ui-ux-design-fundamentals",
-      instructor: "Emma Design",
-      price: 2500,
-      originalPrice: 4500,
-      rating: 4.7,
-      reviews: 215,
-      students: 1800,
-      thumbnail: "/academy.avif",
-      addedDate: "Jan 10, 2026",
-    },
-    {
-      id: "4",
-      title: "Python for Data Science",
-      slug: "python-data-science",
-      instructor: "Dr. Alex Smith",
-      price: 4000,
-      originalPrice: 7000,
-      rating: 4.8,
-      reviews: 412,
-      students: 3400,
-      thumbnail: "/academy.avif",
-      addedDate: "Jan 8, 2026",
-    },
-  ]);
+  const [togglingWishlist, setTogglingWishlist] = useState<string | null>(null);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const [addingAllToCart, setAddingAllToCart] = useState(false);
+  const { wishlistItems, isLoading, removeFromWishlist } = useWishlist();
+  const { addToCartAsync } = useCart();
 
   const filteredItems = wishlistItems.filter(
-    (item) =>
+    (item: WishlistItem) =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.instructor.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const handleRemove = (id: string) => {
-    setWishlistItems(wishlistItems.filter((item) => item.id !== id));
+  const handleRemoveFromWishlist = async (courseId: string) => {
+    setTogglingWishlist(courseId);
+    try {
+      await removeFromWishlist(courseId);
+      toast.success("Removed from wishlist!");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to remove from wishlist");
+    } finally {
+      setTogglingWishlist(null);
+    }
   };
 
-  const handleAddToCart = (id: string) => {
-    console.log("Added to cart:", id);
-    handleRemove(id);
+  const handleAddToCart = async (courseId: string) => {
+    setAddingToCart(courseId);
+    try {
+      await addToCartAsync(courseId);
+      toast.success("Course added to cart!");
+    } catch (error: any) {
+      console.error("Error adding to cart:", error);
+      toast.error(error?.message || "Failed to add course to cart");
+    } finally {
+      setAddingToCart(null);
+    }
   };
 
-  const totalValue = wishlistItems.reduce((sum, item) => sum + item.price, 0);
+  const handleAddAllToCart = async () => {
+    if (wishlistItems.length === 0) return;
+
+    setAddingAllToCart(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const item of wishlistItems) {
+        try {
+          await addToCartAsync(item._id);
+          successCount++;
+        } catch (error) {
+          console.error(`Failed to add ${item.title}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(
+          `Added ${successCount} course${successCount > 1 ? "s" : ""} to cart!`,
+        );
+      }
+      if (errorCount > 0) {
+        toast.error(
+          `Failed to add ${errorCount} course${errorCount > 1 ? "s" : ""}`,
+        );
+      }
+    } finally {
+      setAddingAllToCart(false);
+    }
+  };
+
+  const totalValue = wishlistItems.reduce(
+    (sum: number, item: WishlistItem) => sum + item.price,
+    0,
+  );
   const savings = wishlistItems.reduce(
-    (sum, item) => sum + (item.originalPrice - item.price),
+    (sum: number, item: WishlistItem) => sum + (item.price * 1.5 - item.price),
     0,
   );
 
@@ -138,7 +144,11 @@ const WishlistPage = () => {
             </div>
           </div>
 
-          {filteredItems.length === 0 ?
+          {isLoading ?
+            <div className="py-12 text-center">
+              <p className="text-slate-600">Loading your wishlist...</p>
+            </div>
+          : filteredItems.length === 0 ?
             <div className="py-12 text-center">
               <p className="text-slate-600 text-lg mb-4">
                 {searchQuery ?
@@ -152,17 +162,19 @@ const WishlistPage = () => {
               </Link>
             </div>
           : <div className="space-y-3">
-              {filteredItems.map((item) => (
+              {filteredItems.map((item: WishlistItem) => (
                 <div
-                  key={item.id}
+                  key={item._id}
                   className="border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors"
                 >
                   <div className="flex gap-4">
                     {/* Thumbnail */}
-                    <Link href={`/academy/courses/${item.slug}`}>
-                      <div className="relative w-24 h-24 rounded overflow-hidden bg-slate-200 flex-shrink-0 hover:opacity-80 transition-opacity">
+                    <Link
+                      href={`/academy/courses/${item.slug?.current || item._id}`}
+                    >
+                      <div className="relative w-24 h-24 rounded overflow-hidden bg-slate-200 shrink-0 hover:opacity-80 transition-opacity">
                         <Image
-                          src={item.thumbnail}
+                          src={item.image || "/academy.avif"}
                           alt={item.title}
                           fill
                           className="object-cover"
@@ -172,7 +184,9 @@ const WishlistPage = () => {
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <Link href={`/academy/courses/${item.slug}`}>
+                      <Link
+                        href={`/academy/courses/${item.slug?.current || item._id}`}
+                      >
                         <h3 className="font-semibold text-slate-900 hover:text-emerald-600 transition-colors line-clamp-2 mb-1">
                           {item.title}
                         </h3>
@@ -182,13 +196,11 @@ const WishlistPage = () => {
                       </p>
                       <div className="flex flex-wrap gap-3 text-xs text-slate-600">
                         <span className="flex items-center gap-1">
-                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                          {item.rating} ({item.reviews})
+                          <span className="w-3 h-3" />
+                          {item.rating}
                         </span>
                         <span>{item.students.toLocaleString()} students</span>
-                        <span className="text-slate-400">
-                          Added {item.addedDate}
-                        </span>
+                        <span>{item.level}</span>
                       </div>
                     </div>
 
@@ -198,26 +210,25 @@ const WishlistPage = () => {
                         <p className="text-xl font-bold text-slate-900">
                           ₦{item.price.toLocaleString()}
                         </p>
-                        <p className="text-sm line-through text-slate-400">
-                          ₦{item.originalPrice.toLocaleString()}
-                        </p>
                       </div>
 
                       <div className="flex gap-2">
                         <button
-                          onClick={() => handleRemove(item.id)}
-                          className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          onClick={() => handleRemoveFromWishlist(item._id)}
+                          disabled={togglingWishlist === item._id}
+                          className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                           title="Remove from wishlist"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                         <Button
-                          onClick={() => handleAddToCart(item.id)}
+                          onClick={() => handleAddToCart(item._id)}
+                          disabled={addingToCart === item._id}
                           size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
                         >
                           <ShoppingCart className="w-4 h-4 mr-1" />
-                          Add
+                          {addingToCart === item._id ? "Adding..." : "Add"}
                         </Button>
                       </div>
                     </div>
@@ -257,8 +268,12 @@ const WishlistPage = () => {
             </div>
 
             {wishlistItems.length > 0 && (
-              <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                Add All to Cart
+              <Button
+                onClick={handleAddAllToCart}
+                disabled={addingAllToCart}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+              >
+                {addingAllToCart ? "Adding..." : "Add All to Cart"}
               </Button>
             )}
           </div>

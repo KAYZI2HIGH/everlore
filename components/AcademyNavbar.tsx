@@ -13,9 +13,11 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Logo } from "./header";
 import ProfileDropdown from "./ProfileDropdown";
+import { useCart } from "@/hooks/useCart";
 
 const AcademyNavbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { cartCount } = useCart();
 
   const navLinks = [
     { label: "Courses", href: "/academy/courses" },
@@ -64,17 +66,6 @@ const AcademyNavbar = () => {
 
           {/* Right Section */}
           <div className="hidden md:flex items-center gap-2">
-            {/* Notifications */}
-            <Button
-              size="icon"
-              variant="ghost"
-              className="relative"
-              aria-label="Notifications"
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full"></span>
-            </Button>
-
             {/* Cart */}
             <Button
               size="icon"
@@ -85,9 +76,11 @@ const AcademyNavbar = () => {
             >
               <Link href="/academy/cart">
                 <ShoppingCart className="w-5 h-5" />
-                <span className="absolute top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full text-xs font-semibold text-white flex items-center justify-center">
-                  4
-                </span>
+                {cartCount > 0 && (
+                  <span className="absolute top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full text-xs font-semibold text-white flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
             </Button>
 

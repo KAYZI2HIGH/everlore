@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { BreadcrumbUI } from "@/components/BreadcrumbUi";
@@ -8,20 +8,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, Clock, CheckCircle, Star, MoreVertical } from "lucide-react";
+import { getCurrentUser } from "@/lib/actions/sanity.actions";
 
 interface EnrolledCourse {
-  id: string;
+  _id: string;
   title: string;
-  slug: string;
+  slug: { current: string };
   instructor: string;
-  thumbnail: string;
+  image: string;
   rating: number;
-  reviews: number;
-  progress: number;
-  lastAccessed: string;
-  totalLessons: number;
-  completedLessons: number;
+  students: number;
   status: "in-progress" | "completed";
+}
+
+interface User {
+  enrolledCourses: EnrolledCourse[];
 }
 
 const MyLearningPage = () => {
@@ -29,94 +30,35 @@ const MyLearningPage = () => {
   const [selectedFilter, setSelectedFilter] = useState<
     "all" | "in-progress" | "completed"
   >("all");
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock enrolled courses data
-  const enrolledCourses: EnrolledCourse[] = [
-    {
-      id: "1",
-      title: "Google Automation Masterclass: Build E-commerce Systems",
-      slug: "google-automation-masterclass",
-      instructor: "Sarah Anderson",
-      thumbnail: "/academy.avif",
-      rating: 4.8,
-      reviews: 342,
-      progress: 65,
-      lastAccessed: "2 hours ago",
-      totalLessons: 55,
-      completedLessons: 36,
-      status: "in-progress",
-    },
-    {
-      id: "2",
-      title: "Advanced React & Next.js Development",
-      slug: "advanced-react-nextjs",
-      instructor: "John Developer",
-      thumbnail: "/academy.avif",
-      rating: 4.9,
-      reviews: 528,
-      progress: 100,
-      lastAccessed: "1 week ago",
-      totalLessons: 48,
-      completedLessons: 48,
-      status: "completed",
-    },
-    {
-      id: "3",
-      title: "UI/UX Design Fundamentals",
-      slug: "ui-ux-design-fundamentals",
-      instructor: "Emma Design",
-      thumbnail: "/academy.avif",
-      rating: 4.7,
-      reviews: 215,
-      progress: 40,
-      lastAccessed: "3 days ago",
-      totalLessons: 42,
-      completedLessons: 17,
-      status: "in-progress",
-    },
-    {
-      id: "4",
-      title: "Python for Data Science",
-      slug: "python-data-science",
-      instructor: "Dr. Alex Smith",
-      thumbnail: "/academy.avif",
-      rating: 4.8,
-      reviews: 412,
-      progress: 25,
-      lastAccessed: "1 week ago",
-      totalLessons: 60,
-      completedLessons: 15,
-      status: "in-progress",
-    },
-    {
-      id: "5",
-      title: "Digital Marketing Masterclass",
-      slug: "digital-marketing",
-      instructor: "Mark Marketing",
-      thumbnail: "/academy.avif",
-      rating: 4.6,
-      reviews: 189,
-      progress: 100,
-      lastAccessed: "2 weeks ago",
-      totalLessons: 38,
-      completedLessons: 38,
-      status: "completed",
-    },
-    {
-      id: "6",
-      title: "Web Design with Figma",
-      slug: "web-design-figma",
-      instructor: "Lisa Creative",
-      thumbnail: "/academy.avif",
-      rating: 4.9,
-      reviews: 356,
-      progress: 55,
-      lastAccessed: "Yesterday",
-      totalLessons: 44,
-      completedLessons: 24,
-      status: "in-progress",
-    },
-  ];
+  useEffect(() => {
+    const fetchEnrolledCourses = async () => {
+      setIsLoading(true);
+      try {
+        const user = await getCurrentUser();
+        if (user?.enrolledCourses) {
+          // Set default status for courses without status
+          const coursesWithStatus = user.enrolledCourses.map(
+            (course: EnrolledCourse) => ({
+              ...course,
+              status: (course.status || "in-progress") as
+                | "in-progress"
+                | "completed",
+            }),
+          );
+          setEnrolledCourses(coursesWithStatus);
+        }
+      } catch (error) {
+        console.error("Error fetching enrolled courses:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEnrolledCourses();
+  }, []);
 
   // Filter courses
   const filteredCourses = enrolledCourses
@@ -156,7 +98,7 @@ const MyLearningPage = () => {
       <div className="px-6 md:px-20 py-8 bg-white">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 mb-6">
           {/* Header */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <h1 className="text-4xl font-bold text-slate-900 mb-2">
               My Learning
             </h1>
@@ -218,10 +160,16 @@ const MyLearningPage = () => {
 
       {/* Course Grid */}
       <div className="px-6 md:px-20 py-8">
-        {filteredCourses.length === 0 ?
+        {isLoading ?
+          <div className="bg-white rounded-lg p-12 text-center">
+            <p className="text-slate-600">Loading your courses...</p>
+          </div>
+        : filteredCourses.length === 0 ?
           <div className="bg-white rounded-lg p-12 text-center">
             <p className="text-slate-600 text-lg mb-4">
-              No courses found matching your criteria
+              {enrolledCourses.length === 0 ?
+                "You haven't enrolled in any courses yet"
+              : "No courses found matching your criteria"}
             </p>
             <Link href="/academy/courses">
               <Button className="bg-emerald-600 hover:bg-emerald-700">
@@ -232,20 +180,20 @@ const MyLearningPage = () => {
         : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCourses.map((course) => (
               <Link
-                key={course.id}
-                href={`/academy/courses/${course.slug}`}
+                key={course._id}
+                href={`/academy/courses/${course.slug.current}`}
                 className="group"
               >
                 <div className="bg-white rounded-lg overflow-hidden border border-slate-200 hover:border-emerald-300 hover:shadow-lg transition-all duration-300">
                   {/* Thumbnail */}
                   <div className="relative w-full h-40 bg-slate-200 overflow-hidden">
                     <Image
-                      src={course.thumbnail}
+                      src={course.image || "/academy.avif"}
                       alt={course.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex items-end">
                       <div className="p-3 w-full">
                         <Badge
                           className={`${
@@ -287,39 +235,9 @@ const MyLearningPage = () => {
                       </div>
                     </div>
 
-                    {/* Progress */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-slate-600">
-                          {course.completedLessons} of {course.totalLessons}{" "}
-                          lessons
-                        </p>
-                        <p className="text-xs font-semibold text-slate-900">
-                          {course.progress}%
-                        </p>
-                      </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full transition-all ${
-                            course.progress === 100 ?
-                              "bg-blue-600"
-                            : "bg-emerald-600"
-                          }`}
-                          style={{ width: `${course.progress}%` }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    {/* Last Accessed */}
-                    <p className="text-xs text-slate-500">
-                      Last accessed: {course.lastAccessed}
-                    </p>
-
                     {/* Action Button */}
                     <Button className="w-full mt-2 bg-slate-100 text-slate-900 hover:bg-slate-200">
-                      {course.progress === 100 ?
-                        "View Certificate"
-                      : "Continue Learning"}
+                      Continue Learning
                     </Button>
                   </div>
                 </div>
