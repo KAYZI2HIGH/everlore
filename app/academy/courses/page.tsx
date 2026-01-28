@@ -65,8 +65,8 @@ const CoursePage = () => {
 
         // Get enrolled course IDs
         if (userData?.enrolledCourses) {
-          const enrolled = userData.enrolledCourses.map((course: any) =>
-            course._ref || course._id,
+          const enrolled = userData.enrolledCourses.map(
+            (course: any) => course._ref || course._id,
           );
           setEnrolledCourseIds(enrolled);
         }
