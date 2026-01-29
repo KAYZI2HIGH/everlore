@@ -532,3 +532,98 @@ export async function verifyPaystackPayment(reference: string) {
     };
   }
 }
+
+export async function getAllBlogPosts() {
+  try {
+    const posts = await client.fetch(
+      `*[_type == "blogPost"] | order(publishedAt desc) {
+        _id,
+        title,
+        slug,
+        summary,
+        image,
+        author,
+        category,
+        tags,
+        publishedAt,
+        featured
+      }`,
+    );
+    return posts || [];
+  } catch (error) {
+    console.error("Error fetching blog posts:", error);
+    return [];
+  }
+}
+
+export async function getBlogPostBySlug(slug: string) {
+  try {
+    const post = await client.fetch(
+      `*[_type == "blogPost" && slug.current == $slug][0] {
+        _id,
+        title,
+        slug,
+        summary,
+        content,
+        image,
+        author,
+        category,
+        tags,
+        publishedAt,
+        featured
+      }`,
+      { slug },
+    );
+    return post || null;
+  } catch (error) {
+    console.error("Error fetching blog post:", error);
+    return null;
+  }
+}
+
+export async function getBlogPostsByCategory(category: string) {
+  try {
+    const posts = await client.fetch(
+      `*[_type == "blogPost" && category == $category] | order(publishedAt desc) {
+        _id,
+        title,
+        slug,
+        summary,
+        image,
+        author,
+        category,
+        tags,
+        publishedAt,
+        featured
+      }`,
+      { category },
+    );
+    return posts || [];
+  } catch (error) {
+    console.error("Error fetching blog posts by category:", error);
+    return [];
+  }
+}
+
+export async function getFeaturedBlogPosts() {
+  try {
+    const posts = await client.fetch(
+      `*[_type == "blogPost" && featured == true] | order(publishedAt desc) {
+        _id,
+        title,
+        slug,
+        summary,
+        image,
+        author,
+        category,
+        tags,
+        publishedAt,
+        featured
+      }`,
+    );
+    return posts || [];
+  } catch (error) {
+    console.error("Error fetching featured blog posts:", error);
+    return [];
+  }
+}
