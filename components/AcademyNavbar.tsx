@@ -124,7 +124,7 @@ const AcademyNavbar = () => {
                 {link.label}
               </Link>
             ))}
-            <div className="px-4 py-2">
+            <div className="px-4 pr-0 py-2 flex gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -133,6 +133,22 @@ const AcademyNavbar = () => {
                   className="pl-10 py-2 text-sm bg-secondary border-border"
                 />
               </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="relative"
+                aria-label="Shopping cart"
+                asChild
+              >
+                <Link href="/academy/cart">
+                  <ShoppingCart className="w-5 h-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full text-xs font-semibold text-white flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
+              </Button>
             </div>
           </div>
         )}
