@@ -69,9 +69,12 @@ const MyLearningPage = () => {
 
   const stats = {
     total: enrolledCourses.length,
-    inProgress: enrolledCourses.filter((c: EnrolledCourse) => c.status === "in-progress")
-      .length,
-    completed: enrolledCourses.filter((c: EnrolledCourse) => c.status === "completed").length,
+    inProgress: enrolledCourses.filter(
+      (c: EnrolledCourse) => c.status === "in-progress",
+    ).length,
+    completed: enrolledCourses.filter(
+      (c: EnrolledCourse) => c.status === "completed",
+    ).length,
   };
 
   return (

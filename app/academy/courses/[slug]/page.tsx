@@ -100,12 +100,12 @@ const CourseDetailsPage = () => {
 
   // Check if course is purchased
   const isPurchased =
-    course && user?.enrolledCourses
-      ? user.enrolledCourses.some(
-          (enrolled: any) =>
-            enrolled._ref === course._id || enrolled._id === course._id,
-        )
-      : false;
+    course && user?.enrolledCourses ?
+      user.enrolledCourses.some(
+        (enrolled: any) =>
+          enrolled._ref === course._id || enrolled._id === course._id,
+      )
+    : false;
 
   const isLoading = courseLoading;
 
