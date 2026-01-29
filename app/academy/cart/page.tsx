@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BreadcrumbUI } from "@/components/BreadcrumbUi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,22 +31,22 @@ interface CartItem {
 
 const CartPage = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [couponCode, setCouponCode] = useState("");
   const [togglingWishlist, setTogglingWishlist] = useState<string | null>(null);
   const [removingFromCart, setRemovingFromCart] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
   const { cartItems, isLoading, removeFromCart, removeFromCartAsync } =
     useCart();
   const { isInWishlist, toggleWishlistAsync } = useWishlist();
-  const { initializePayment, isProcessing } = usePaystack();
+  const { initializePayment, isProcessing } = usePaystack(queryClient);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const user = await getCurrentUser();
-      setUserEmail(user?.email || null);
-    };
-    fetchUser();
-  }, []);
+  // Fetch user data with React Query
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => getCurrentUser(),
+  });
+
+  const userEmail = user?.email || null;
 
   const handleRemoveFromCart = async (courseId: string) => {
     setRemovingFromCart(courseId);

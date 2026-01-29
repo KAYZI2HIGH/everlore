@@ -68,7 +68,7 @@ export async function addToCart(courseId: string) {
 
     await client
       .patch(user._id)
-      .append("cart", [{ _type: "reference", _ref: courseId }])
+      .append("cart", [{ _key: `cart-${courseId}-${Date.now()}`, _type: "reference", _ref: courseId }])
       .commit();
 
     return { success: true };
@@ -134,7 +134,7 @@ export async function addToWishlist(courseId: string) {
 
     await client
       .patch(user._id)
-      .append("wishlist", [{ _type: "reference", _ref: courseId }])
+      .append("wishlist", [{ _key: `wishlist-${courseId}-${Date.now()}`, _type: "reference", _ref: courseId }])
       .commit();
 
     return { success: true };
@@ -201,7 +201,7 @@ export async function enrollCourse(courseId: string) {
     // Add to enrolled and remove from cart
     await client
       .patch(user._id)
-      .append("enrolledCourses", [{ _type: "reference", _ref: courseId }])
+      .append("enrolledCourses", [{ _key: `enrolled-${courseId}-${Date.now()}`, _type: "reference", _ref: courseId }])
       .unset([`cart[_ref == "${courseId}"]`])
       .commit();
 

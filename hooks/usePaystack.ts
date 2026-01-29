@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   enrollUserInCourses,
   verifyPaystackPayment,
@@ -10,7 +11,9 @@ interface PaymentConfig {
   courseIds: string[];
 }
 
-export const usePaystack = () => {
+export const usePaystack = (queryClientOverride?: any) => {
+  const defaultQueryClient = useQueryClient();
+  const queryClient = queryClientOverride || defaultQueryClient;
   const [isProcessing, setIsProcessing] = useState(false);
   const [PaystackPop, setPaystackPop] = useState<any>(null);
 
@@ -64,6 +67,18 @@ export const usePaystack = () => {
       }
 
       console.log("✓ User enrolled successfully!");
+
+      // Refetch relevant queries after successful enrollment
+      console.log("🔄 Refetching queries...");
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ["user"] }),
+        queryClient.refetchQueries({ queryKey: ["courses"] }),
+        queryClient.refetchQueries({ queryKey: ["course"] }),
+        queryClient.refetchQueries({ queryKey: ["cart"] }),
+        queryClient.refetchQueries({ queryKey: ["learning"] }),
+      ]);
+      console.log("✓ Queries refetched successfully!");
+
       return Promise.resolve();
     } catch (error) {
       console.error("❌ Error in handlePaymentSuccess:", error);

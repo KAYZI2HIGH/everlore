@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { BreadcrumbUI } from "@/components/BreadcrumbUi";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,64 +22,56 @@ interface EnrolledCourse {
   status: "in-progress" | "completed";
 }
 
-interface User {
-  enrolledCourses: EnrolledCourse[];
-}
-
 const MyLearningPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState<
     "all" | "in-progress" | "completed"
   >("all");
-  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchEnrolledCourses = async () => {
-      setIsLoading(true);
-      try {
-        const user = await getCurrentUser();
-        if (user?.enrolledCourses) {
-          // Set default status for courses without status
-          const coursesWithStatus = user.enrolledCourses.map(
-            (course: EnrolledCourse) => ({
-              ...course,
-              status: (course.status || "in-progress") as
-                | "in-progress"
-                | "completed",
-            }),
-          );
-          setEnrolledCourses(coursesWithStatus);
-        }
-      } catch (error) {
-        console.error("Error fetching enrolled courses:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Fetch user with enrolled courses using React Query
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["learning"],
+    queryFn: async () => {
+      const userData = await getCurrentUser();
+      return {
+        ...userData,
+        enrolledCourses: (userData?.enrolledCourses || []).map(
+          (course: EnrolledCourse) => ({
+            ...course,
+            status: (course.status || "in-progress") as
+              | "in-progress"
+              | "completed",
+          }),
+        ),
+      };
+    },
+  });
 
-    fetchEnrolledCourses();
-  }, []);
+  const enrolledCourses = user?.enrolledCourses || [];
 
   // Filter courses
-  const filteredCourses = enrolledCourses
-    .filter((course) => {
-      if (selectedFilter !== "all") {
-        return course.status === selectedFilter;
-      }
-      return true;
-    })
-    .filter(
-      (course) =>
-        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        course.instructor.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
+  const filteredCourses = useMemo(
+    () =>
+      enrolledCourses
+        .filter((course: EnrolledCourse) => {
+          if (selectedFilter !== "all") {
+            return course.status === selectedFilter;
+          }
+          return true;
+        })
+        .filter(
+          (course: EnrolledCourse) =>
+            course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            course.instructor.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
+    [enrolledCourses, selectedFilter, searchQuery],
+  );
 
   const stats = {
     total: enrolledCourses.length,
-    inProgress: enrolledCourses.filter((c) => c.status === "in-progress")
+    inProgress: enrolledCourses.filter((c: EnrolledCourse) => c.status === "in-progress")
       .length,
-    completed: enrolledCourses.filter((c) => c.status === "completed").length,
+    completed: enrolledCourses.filter((c: EnrolledCourse) => c.status === "completed").length,
   };
 
   return (
@@ -178,7 +171,7 @@ const MyLearningPage = () => {
             </Link>
           </div>
         : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCourses.map((course) => (
+            {filteredCourses.map((course: EnrolledCourse) => (
               <Link
                 key={course._id}
                 href={`/academy/courses/${course.slug.current}`}

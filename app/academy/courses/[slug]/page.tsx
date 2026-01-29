@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BreadcrumbUI } from "@/components/BreadcrumbUi";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,7 @@ import { getCourseBySlug, getCurrentUser } from "@/lib/actions/sanity.actions";
 import { CourseDetailsSkeleton } from "@/components/skeletons/CourseDetailsSkeleton";
 import { useCart } from "@/hooks/useCart";
 import { useWishlist } from "@/hooks/useWishlist";
+import { usePaystack } from "@/hooks/usePaystack";
 import { toast } from "sonner";
 
 interface Course {
@@ -72,45 +74,40 @@ interface FAQItem {
 const CourseDetailsPage = () => {
   const params = useParams();
   const slug = params.slug as string;
+  const queryClient = useQueryClient();
 
-  const [course, setCourse] = useState<Course | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
-  const [isPurchased, setIsPurchased] = useState(false);
   const [courseProgress, setCourseProgress] = useState(45);
   const [addingToCart, setAddingToCart] = useState(false);
   const [addingToWishlist, setAddingToWishlist] = useState(false);
 
   const { addToCartAsync } = useCart();
   const { isInWishlist, toggleWishlistAsync } = useWishlist();
+  const { initializePayment, isProcessing } = usePaystack(queryClient);
 
-  // Fetch course by slug and check if user is enrolled
-  useEffect(() => {
-    const fetchCourseAndCheckEnrollment = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getCourseBySlug(slug);
-        if (data) {
-          setCourse(data);
+  // Fetch course by slug
+  const { data: course, isLoading: courseLoading } = useQuery({
+    queryKey: ["course", slug],
+    queryFn: () => getCourseBySlug(slug),
+    enabled: !!slug,
+  });
 
-          // Check if user is already enrolled
-          const user = await getCurrentUser();
-          if (user?.enrolledCourses) {
-            const isEnrolled = user.enrolledCourses.some(
-              (enrolled: any) =>
-                enrolled._ref === data._id || enrolled._id === data._id,
-            );
-            setIsPurchased(isEnrolled);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching course:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchCourseAndCheckEnrollment();
-  }, [slug]);
+  // Fetch current user to check enrollment
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => getCurrentUser(),
+  });
+
+  // Check if course is purchased
+  const isPurchased =
+    course && user?.enrolledCourses
+      ? user.enrolledCourses.some(
+          (enrolled: any) =>
+            enrolled._ref === course._id || enrolled._id === course._id,
+        )
+      : false;
+
+  const isLoading = courseLoading;
 
   const handleAddToCart = async () => {
     if (!course) return;
@@ -146,7 +143,7 @@ const CourseDetailsPage = () => {
 
   const learningPoints = course?.learningPoints || [];
   const modules: CourseModule[] =
-    course?.modules?.map((m, idx) => ({
+    course?.modules?.map((m: any, idx: number) => ({
       id: String(idx + 1),
       title: m.title || `Module ${idx + 1}`,
       lessons: m.lessons,
@@ -155,23 +152,23 @@ const CourseDetailsPage = () => {
 
   const faqs: FAQItem[] =
     course?.faqs
-      ?.map((f, idx) => ({
+      ?.map((f: any, idx: number) => ({
         id: String(idx + 1),
         question: f.question || "",
         answer: f.answer || "",
       }))
-      .filter((f) => f.question) || [];
+      .filter((f: any) => f.question) || [];
 
   const reviews: CourseReview[] =
     course?.reviews
-      ?.map((r, idx) => ({
+      ?.map((r: any, idx: number) => ({
         id: String(idx + 1),
         author: r.author || "",
         rating: r.rating || 0,
         text: r.text || "",
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(r.author || "anon")}`,
       }))
-      .filter((r) => r.author) || [];
+      .filter((r: any) => r.author) || [];
 
   const highlights = course?.highlights || [];
 
@@ -310,7 +307,7 @@ const CourseDetailsPage = () => {
               What you'll learn
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {learningPoints.map((point, idx) => (
+              {learningPoints.map((point: string, idx: number) => (
                 <div
                   key={idx}
                   className="flex gap-3"
@@ -328,7 +325,7 @@ const CourseDetailsPage = () => {
               Course highlights
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {highlights.map((highlight, idx) => {
+              {highlights.map((highlight: any, idx: number) => {
                 const Icons = [Clock, Play, Zap, Award];
                 const Icon = Icons[idx] || Zap;
                 const text =
