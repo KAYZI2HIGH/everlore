@@ -23,6 +23,7 @@ const AcademyNavbar = () => {
     { label: "Courses", href: "/academy/courses" },
     { label: "My Learning", href: "/academy/learning" },
     { label: "Wishlist", href: "/academy/wishlist" },
+    { label: "Join Everlore", href: "/hiring" },
   ];
 
   return (

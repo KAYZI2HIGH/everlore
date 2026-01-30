@@ -78,12 +78,14 @@ export function Header() {
   return (
     <header
       className={cn(
-        "sticky top-0 w-full border-transparent border-b z-1000 bg-background/95 supports-[backdrop-filter]:bg-background/50 border-border backdrop-blur-lg transition-transform duration-300",
+        "sticky top-0 w-full border-b z-1000 bg-background/95 supports-backdrop-filter:bg-background/50 border-border backdrop-blur-lg transition-transform duration-300",
         isHidden ? "-translate-y-full" : "translate-y-0",
       )}
     >
       <nav className="mx-auto flex h-14 w-full items-center justify-between p-10 px-5 md:px-10">
-        <Logo className="-ml-16" />
+        <Link href={"/"} className="w-full">
+          <Logo className="-ml-16" />
+        </Link>
         <div className="hidden items-center gap-2 md:flex">
           {links.map((link) => (
             <a

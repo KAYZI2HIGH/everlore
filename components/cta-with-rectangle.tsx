@@ -71,7 +71,7 @@ export function CTASection({
         )}
 
         {/* Action Button */}
-        <div className="flex gap-4 items-center justify-center">
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
           <Button
             variant={action?.variant || "default"}
             size="lg"

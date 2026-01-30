@@ -32,7 +32,7 @@ interface Course {
   level: string;
   duration: number;
   students: number;
-  rating: number;
+  rating: number; 
   createdAt: string;
 }
 

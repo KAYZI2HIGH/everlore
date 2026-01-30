@@ -627,3 +627,53 @@ export async function getFeaturedBlogPosts() {
     return [];
   }
 }
+
+export async function getAllJobPostings() {
+  try {
+    const jobs = await client.fetch(
+      `*[_type == "jobPosting"] | order(postedAt desc) {
+        _id,
+        title,
+        slug,
+        department,
+        location,
+        type,
+        level,
+        description,
+        salary,
+        tags,
+        postedAt
+      }`,
+    );
+    return jobs || [];
+  } catch (error) {
+    console.error("Error fetching job postings:", error);
+    return [];
+  }
+}
+
+export async function getJobPostingBySlug(slug: string) {
+  try {
+    const job = await client.fetch(
+      `*[_type == "jobPosting" && slug.current == $slug][0] {
+        _id,
+        title,
+        slug,
+        department,
+        location,
+        type,
+        level,
+        description,
+        salary,
+        tags,
+        postedAt
+      }`,
+      { slug },
+    );
+    return job || null;
+  } catch (error) {
+    console.error("Error fetching job posting:", error);
+    return null;
+  }
+}
+
