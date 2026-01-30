@@ -676,4 +676,3 @@ export async function getJobPostingBySlug(slug: string) {
     return null;
   }
 }
-
