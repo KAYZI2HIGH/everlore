@@ -67,7 +67,7 @@ export default function HiringPage() {
   return (
     <>
       <Header />
-      <section className="py-32 relative">
+      <section className="py-18 px-4! relative">
         <div className="container flex flex-col items-center gap-10">
           <div className="text-center border-b pb-6">
             <h2 className="mx-auto mb-6 text-pretty text-3xl font-semibold md:text-4xl lg:max-w-3xl">
