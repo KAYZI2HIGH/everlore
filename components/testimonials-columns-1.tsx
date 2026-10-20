@@ -26,7 +26,7 @@ export const TestimonialsColumn = (props: {
           ease: "linear",
           repeatType: "loop",
         }}
-        className="flex flex-col gap-6 pb-6 z-100 relative"
+        className="flex flex-col gap-6 pb-6 z-100 relative motion-reduce:!transform-none"
       >
         {[
           ...new Array(2).fill(0).map((_, index) => (

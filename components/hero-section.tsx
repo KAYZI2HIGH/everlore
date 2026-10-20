@@ -74,7 +74,7 @@ const HeroSection = () => {
   return (
     <div className="w-full relative overflow-hidden bg-[linear-gradient(180deg,#F3F9EB_0%,#F3F9EB_80%,white_98%)] px-2">
       {/* Image Slider */}
-      <div className="relative w-full h-100 md:h-125 overflow-hidden rounded-lg md:rounded-xl">
+      <div className="relative w-full h-100 md:h-[calc(100vh-7rem)] overflow-hidden rounded-lg md:rounded-xl">
         {/* Slides */}
         {sliderImages.map((image, index) => (
           <div

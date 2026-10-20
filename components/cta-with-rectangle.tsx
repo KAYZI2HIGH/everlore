@@ -86,7 +86,7 @@ export function CTASection({
             className="opacity-0 animate-fade-in-up delay-500"
             asChild
           >
-            <a href={"/blog"}>Read the blogs</a>
+            <a href={"/blog"}>Read the Blog</a>
           </Button>
         </div>
       </div>

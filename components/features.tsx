@@ -84,7 +84,7 @@ const Feature = ({
     {
       value: "tab-3",
       icon: <VideoIcon className="h-auto w-4 shrink-0" />,
-      label: "MULTIMEDIA & PUBLISHING (Coming Soon)",
+      label: "MULTIMEDIA & PUBLISHING",
       content: {
         badge: "Multimedia & Publising",
         title: "Professional Printing & Publishing Solutions",
@@ -99,42 +99,25 @@ const Feature = ({
   ],
 }: FeatureProps) => {
   return (
-    <section
-      className="py-32 px-4 md:px-0"
-      id="features"
-    >
-      <div className="container mx-auto">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <Badge
-            variant="outline"
-            className="text-xs md:text-sm"
-          >
-            {badge}
-          </Badge>
-          <h1 className="max-w-2xl text-2xl md:text-3xl lg:text-4xl font-semibold">
-            {heading}
-          </h1>
-          <p className="text-muted-foreground max-w-3xl mx-auto text-balance text-sm md:text-base">
-            {description}
-          </p>
-        </div>
+    <section className="bg-[#F3F9EB] px-4 py-16 md:py-24" id="features">
+      <div className="mx-auto max-w-[75rem]">
         <Tabs
           defaultValue={tabs[0].value}
           className="mt-6 md:mt-8"
         >
-          <TabsList className="container grid grid-cols-2 md:grid-cols-4 items-center justify-center gap-2 md:gap-4 lg:gap-10  overflow-x-hidden px-2 md:px-4 lg:px-0 max-w-6xl mx-auto">
+          <TabsList className="mx-auto flex max-w-6xl items-center justify-start gap-1 overflow-x-auto border-b border-[#e5e0d8] px-1 md:grid md:grid-cols-4 md:gap-2 md:overflow-visible">
             {tabs.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="flex items-center gap-2 rounded-xl px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-semibold text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary whitespace-nowrap"
+                className="relative flex min-h-11 shrink-0 items-center justify-center gap-2 border-b-2 border-transparent px-3 py-2 text-center text-xs font-medium text-[#777169] transition-colors hover:text-[#292621] data-[state=active]:border-[#292621] data-[state=active]:text-[#292621] md:px-4 md:text-sm"
               >
                 {tab.icon}{" "}
-                <span className="max-w-lg truncate">{tab.label}</span>
+                <span>{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
-          <div className="mx-auto mt-6 md:mt-8 max-w-screen-xl rounded-2xl bg-muted/70 p-4 md:p-6 lg:p-16">
+          <div className="mx-auto mt-6 max-w-screen-xl rounded-xl border border-[#e5e0d8] bg-[#faf9f6] p-4 md:mt-8 md:p-8 lg:p-12">
             {tabs.map((tab) => (
               <TabsContent
                 key={tab.value}
@@ -158,22 +141,22 @@ const Feature = ({
                     <div className="flex flex-col gap-5">
                       <Badge
                         variant="outline"
-                        className="w-fit bg-background text-xs md:text-sm"
+                        className="w-fit border-[#d8d1c7] bg-white text-xs font-medium text-[#6d675f] md:text-sm"
                       >
                         {tab.content.badge}
                       </Badge>
-                      <h3 className="text-2xl md:text-3xl lg:text-5xl font-medium">
+                      <h3 className="text-balance text-2xl font-medium md:text-3xl">
                         {tab.content.title}
                       </h3>
-                      <p className="text-sm md:text-base text-muted-foreground lg:text-lg">
+                      <p className="text-sm leading-relaxed text-[#6d675f] md:text-base lg:text-lg">
                         {tab.content.description}
                       </p>
                       {tab.content.list && (
                         <div>
                           <p className="text-sm md:text-base">We focus on:</p>
-                          <ul className="mt-2 divide-y border-y border-t-0 *:flex *:items-center *:gap-3 *:py-2 md:*:py-3">
+                          <ul className="mt-3 divide-y border-y border-[#e5e0d8] *:flex *:items-center *:gap-3 *:py-2.5 md:*:py-3">
                             {tab.content.list.map((li) => (
-                              <li>
+                              <li key={li}>
                                 <p className="max-w-62.5 truncate text-xs md:text-sm">
                                   {li}
                                 </p>
@@ -196,8 +179,8 @@ const Feature = ({
                     </div>
                     <img
                       src={tab.content.imageSrc}
-                      alt={tab.content.imageAlt}
-                      className="rounded-xl w-full max-w-sm md:max-w-none"
+                      alt={tab.content.imageAlt === "placeholder" ? tab.content.title : tab.content.imageAlt}
+                      className="w-full max-w-sm rounded-lg md:max-w-none"
                     />
                   </>
                 : tab.content}

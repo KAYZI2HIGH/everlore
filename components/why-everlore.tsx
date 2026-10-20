@@ -3,17 +3,18 @@ import React from "react";
 
 const WhyEverloreSection = () => {
   return (
-    <div className="w-full relative p-5 md:p-10 py-26! bg-white space-y-5">
-      <h2 className="text-2xl md:text-4xl font-semibold leading-snug text-center text-balance">
+    <section className="relative w-full bg-white px-5 py-16 md:px-10 md:py-24">
+      <div className="mx-auto max-w-[75rem]">
+      <h2 className="text-balance text-center text-[clamp(1.75rem,3vw,2.25rem)] font-semibold leading-tight">
         Why Choose Everlore?
       </h2>
-      <p className="text-sm md:text-base text-center max-w-lg mx-auto">
+      <p className="mx-auto mt-4 max-w-lg text-center text-sm leading-relaxed md:text-base">
         At Everlore, we believe in the transformative power of knowledge and
-        digital innovation. We Don't Teach Courses, We Build Outcomes.
+        digital innovation. We Don&apos;t Teach Courses, We Build Outcomes.
       </p>
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mt-12">
-        <div className="p-5 border rounded-lg space-y-3 h-100 relative overflow-hidden">
-          <h3 className="text-xl font-semibold">Skill-to-Income Pathways™</h3>
+      <div className="mt-10 grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="relative h-[25rem] overflow-hidden rounded-xl border p-5">
+          <h3 className="text-lg font-semibold">Skill-to-Income Pathways™</h3>
           <p className="text-sm">
             Structured learning paths designed to move you from skill
             acquisition to monetization—step by step.
@@ -26,8 +27,8 @@ const WhyEverloreSection = () => {
             className="absolute bottom-0 max-md:-bottom-7 right-0 max-md:size-100"
           />
         </div>
-        <div className="p-5 border rounded-lg space-y-3 h-100 relative overflow-hidden">
-          <h3 className="text-xl font-semibold">Everlore Digital Lab™</h3>
+        <div className="relative h-[25rem] overflow-hidden rounded-xl border p-5">
+          <h3 className="text-lg font-semibold">Everlore Digital Lab™</h3>
           <p className="text-sm">
             A members-only environment where strategies are tested, updated, and
             refined before they are taught.
@@ -40,8 +41,8 @@ const WhyEverloreSection = () => {
             className="absolute bottom-0 max-md:-bottom-20 right-0 max-md:size-120"
           />
         </div>
-        <div className="p-5 border rounded-lg space-y-3 h-100 relative overflow-hidden">
-          <h3 className="text-xl font-semibold">Outcome-Backed Learning™</h3>
+        <div className="relative h-[25rem] overflow-hidden rounded-xl border p-5">
+          <h3 className="text-lg font-semibold">Outcome-Backed Learning™</h3>
           <p className="text-sm">
             Every course is built around a defined, measurable outcome, not just
             lessons.
@@ -54,8 +55,8 @@ const WhyEverloreSection = () => {
             className="absolute bottom-0 right-0 max-md:-bottom-7 max-md:w-full max-md:h-80"
           />
         </div>
-        <div className="p-5 border rounded-lg space-y-3 h-100 relative overflow-hidden">
-          <h3 className="text-xl font-semibold">Everlore Growth Ledger™</h3>
+        <div className="relative h-[25rem] overflow-hidden rounded-xl border p-5">
+          <h3 className="text-lg font-semibold">Everlore Growth Ledger™</h3>
           <p className="text-sm">
             Your personal progress vault that tracks skills learned, paths
             completed, and growth milestones.
@@ -69,7 +70,8 @@ const WhyEverloreSection = () => {
           />
         </div>
       </div>
-    </div>
+      </div>
+    </section>
   );
 };
 

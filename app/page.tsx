@@ -11,7 +11,7 @@ import WhyEverloreSection from "@/components/why-everlore";
 
 export default function Home() {
   return (
-    <main className="font-sans dark:bg-black relative w-full bg-[#031c5812]">
+    <main className="font-sans relative w-full bg-[#031c5812] dark:bg-black pt-24">
       <Header />
       <div className="overflow-x-hidden z-10">
         <HeroSection />
@@ -19,7 +19,6 @@ export default function Home() {
         <WhyEverloreSection />
         <Feature />
         <Testimonial />
-        <CTASection withGlow={true} />
         <ContactSection />
         <MinimalFooter />
       </div>

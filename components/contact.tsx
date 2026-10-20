@@ -36,7 +36,12 @@ interface ContactSectionProps {
    * Callback function when the form is submitted.
    * @param data The form data.
    */
-  onSubmit?: (data: any) => void;
+  onSubmit?: (data: {
+    name: string;
+    email: string;
+    message: string;
+    projectType: string[];
+  }) => void;
 }
 
 const defaultSocialLinks = [
@@ -79,6 +84,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     message: "",
     projectType: [],
   });
+  const [submitState, setSubmitState] = React.useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -101,9 +109,13 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit?.(formData);
-    console.log("Form submitted:", formData);
-    // You might want to add a success message or clear the form here
+    setSubmitState("submitting");
+    try {
+      onSubmit?.(formData);
+      setSubmitState("success");
+    } catch {
+      setSubmitState("error");
+    }
   };
 
   const projectTypeOptions = [
@@ -120,7 +132,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
   return (
     <section
-      className="relative min-h-screen w-screen overflow-hidden bg-background"
+      className="relative w-full overflow-hidden bg-background"
       id="contact"
     >
       {/* Background Image and Animated Bubbles */}
@@ -135,12 +147,12 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               key={i}
               className="absolute bg-white/20 rounded-full animate-bubble opacity-0"
               style={{
-                width: `${Math.random() * 20 + 10}px`,
-                height: `${Math.random() * 20 + 10}px`,
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 10}s`,
-                animationDuration: `${Math.random() * 20 + 10}s`,
-                top: `${Math.random() * 100}%`, // Initial random top position
+                width: `${[14, 18, 22, 16, 26][i % 5]}px`,
+                height: `${[14, 18, 22, 16, 26][i % 5]}px`,
+                left: `${(i * 17 + 5) % 100}%`,
+                animationDelay: `${(i * 1.7) % 10}s`,
+                animationDuration: `${15 + (i % 4) * 3}s`,
+                top: `${(i * 23 + 8) % 100}%`,
               }}
             />
           ))}
@@ -296,11 +308,22 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 </div>
               </div>
 
+              {submitState === "success" && (
+                <p className="rounded-md border border-[#5E8B20]/30 bg-[#EFF8DF] p-3 text-sm text-[#35520F]" role="status">
+                  Thanks — your message is ready to be reviewed. We&apos;ll be in touch soon.
+                </p>
+              )}
+              {submitState === "error" && (
+                <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive" role="alert">
+                  We couldn&apos;t send that message. Please try again.
+                </p>
+              )}
               <Button
                 type="submit"
-                className="w-full text-sm md:text-base"
+                className="min-h-11 w-full text-sm md:text-base"
+                disabled={submitState === "submitting"}
               >
-                Send Message
+                {submitState === "submitting" ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </div>
@@ -329,7 +352,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         .animate-bubble {
           animation: bubble var(--animation-duration, 15s) ease-in-out infinite;
           animation-fill-mode: forwards;
-          --rand-x-offset: ${Math.random() > 0.5 ? 1 : -1};
+          --rand-x-offset: 1;
         }
       `}</style>
     </section>

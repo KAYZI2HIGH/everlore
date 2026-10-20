@@ -9,8 +9,6 @@ import Link from "next/link";
 
 export function Header() {
   const [open, setOpen] = React.useState(false);
-  const [isHidden, setIsHidden] = React.useState(false);
-  const lastScrollYRef = React.useRef(0);
 
   const links = [
     {
@@ -52,38 +50,10 @@ export function Header() {
     };
   }, [open]);
 
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const lastScrollY = lastScrollYRef.current;
-
-      if (currentScrollY < 50) {
-        // Always show at top
-        setIsHidden(false);
-      } else if (currentScrollY > lastScrollY) {
-        // Scrolling down - hide
-        setIsHidden(true);
-      } else {
-        // Scrolling up - show
-        setIsHidden(false);
-      }
-
-      lastScrollYRef.current = currentScrollY;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
-    <header
-      className={cn(
-        "sticky top-0 w-full border-b z-1000 bg-background/95 supports-backdrop-filter:bg-background/50 border-border backdrop-blur-lg transition-transform duration-300",
-        isHidden ? "-translate-y-full" : "translate-y-0",
-      )}
-    >
+    <header className="fixed top-0 z-1000 w-full border-b border-border bg-background/95 backdrop-blur-lg supports-backdrop-filter:bg-background/50">
       <nav className="mx-auto flex h-14 w-full items-center justify-between p-10 px-5 md:px-10">
-        <Link href={"/"} className="w-full">
+        <Link href="/" className="w-full" aria-label="Everlore home">
           <Logo className="-ml-16" />
         </Link>
         <div className="hidden items-center gap-2 md:flex">
@@ -136,7 +106,7 @@ export function Header() {
                 className: "justify-start",
               })}
               href={link.href}
-              onClick={(e) => handleSmoothScroll(e as any, link.href)}
+              onClick={(e) => handleSmoothScroll(e, link.href)}
             >
               {link.label}
             </a>

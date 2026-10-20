@@ -84,7 +84,7 @@ export function Academy() {
               <img
                 src="/hero-slider-images/young-student-learning-library.jpg"
                 className="rounded-[15px] shadow object-cover w-full h-full"
-                alt="payments illustration light"
+                alt="Student learning in a library"
                 width={1207}
                 height={929}
               />
