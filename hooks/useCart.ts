@@ -4,13 +4,18 @@ import {
   addToCart,
   removeFromCart,
 } from "@/lib/actions/sanity.actions";
+import { userQueryKeys } from "@/lib/query-keys";
 
 interface CartCacheItem {
   _id: string;
 }
 
 interface CartMutationContext {
-  previousCart?: CartCacheItem[];
+  previousUser?: { cart?: CartCacheItem[] } | null;
+}
+
+interface UserCache {
+  cart?: CartCacheItem[];
 }
 
 export const useCart = () => {
@@ -18,20 +23,9 @@ export const useCart = () => {
 
   // Fetch cart items
   const { data: cartItems = [], isLoading } = useQuery({
-    queryKey: ["cart"],
-    queryFn: async () => {
-      const user = await getCurrentUser();
-      const cart = user?.cart || [];
-
-      console.log("[useCart] fetched cart:", {
-        count: cart.length,
-        ids: cart.map((item: { _id: string }) => item._id),
-      });
-
-      return cart;
-    },
-    staleTime: 0,
-    refetchOnMount: "always",
+    queryKey: userQueryKeys.current(),
+    queryFn: getCurrentUser,
+    select: (user) => user?.cart || [],
   });
 
   // Add to cart mutation with optimistic update
@@ -50,35 +44,35 @@ export const useCart = () => {
 
       return result;
     },
-    onMutate: async () => {
+    onMutate: async (courseId: string) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
+      await queryClient.cancelQueries({ queryKey: userQueryKeys.current() });
 
       // Get previous data
-      const previousCart = queryClient.getQueryData<CartCacheItem[]>(["cart"]);
+      const previousUser = queryClient.getQueryData<{ cart?: CartCacheItem[] }>(
+        userQueryKeys.current(),
+      );
 
       // Optimistically update the cache
-      queryClient.setQueryData<CartCacheItem[]>(["cart"], (old) => {
-        // Just increment the count - we'll refetch full data on success
-        return old;
-      });
+      queryClient.setQueryData<UserCache>(
+        userQueryKeys.current(),
+        (user) =>
+          user
+            ? { ...user, cart: [...(user.cart || []), { _id: courseId }] }
+            : user,
+      );
 
-      return { previousCart };
+      return { previousUser };
     },
     onError: (_error, _courseId, context: CartMutationContext | undefined) => {
       // Rollback on error
-      if (context?.previousCart) {
-        queryClient.setQueryData(["cart"], context.previousCart);
+      if (context?.previousUser) {
+        queryClient.setQueryData(userQueryKeys.current(), context.previousUser);
       }
     },
     onSuccess: async () => {
       console.log("[useCart] addToCart mutation succeeded; refreshing cart");
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["cart"] }),
-        queryClient.invalidateQueries({ queryKey: ["user"] }),
-        queryClient.invalidateQueries({ queryKey: ["learning"] }),
-      ]);
-      await queryClient.refetchQueries({ queryKey: ["cart"], type: "all" });
+      await queryClient.invalidateQueries({ queryKey: userQueryKeys.current() });
     },
   });
 
@@ -100,31 +94,40 @@ export const useCart = () => {
     },
     onMutate: async (courseId: string) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
+      await queryClient.cancelQueries({ queryKey: userQueryKeys.current() });
 
       // Get previous data
-      const previousCart = queryClient.getQueryData<CartCacheItem[]>(["cart"]);
+      const previousUser = queryClient.getQueryData<{ cart?: CartCacheItem[] }>(
+        userQueryKeys.current(),
+      );
 
       // Optimistically update the cache
-      queryClient.setQueryData<CartCacheItem[]>(["cart"], (old) => {
-        return old?.filter((item) => item._id !== courseId) || [];
-      });
+      queryClient.setQueryData<UserCache>(
+        userQueryKeys.current(),
+        (user) => {
+          if (!user) return user;
+          return {
+            ...user,
+            cart: (user.cart || []).filter(
+              (item: CartCacheItem) => item._id !== courseId,
+            ),
+          };
+        },
+      );
 
-      return { previousCart };
+      return { previousUser };
     },
     onError: (_error, _courseId, context: CartMutationContext | undefined) => {
       // Rollback on error
-      if (context?.previousCart) {
-        queryClient.setQueryData(["cart"], context.previousCart);
+      if (context?.previousUser) {
+        queryClient.setQueryData(userQueryKeys.current(), context.previousUser);
       }
     },
     onSuccess: async () => {
       console.log("[useCart] removeFromCart mutation succeeded; refreshing cart");
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["cart"] }),
-        queryClient.invalidateQueries({ queryKey: ["user"] }),
+        queryClient.invalidateQueries({ queryKey: userQueryKeys.current() }),
       ]);
-      await queryClient.refetchQueries({ queryKey: ["cart"], type: "all" });
     },
   });
 

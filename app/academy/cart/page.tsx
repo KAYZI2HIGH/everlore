@@ -17,6 +17,7 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { usePaystack } from "@/hooks/usePaystack";
 import { getCurrentUser } from "@/lib/actions/sanity.actions";
 import { toast } from "sonner";
+import { userQueryKeys } from "@/lib/query-keys";
 
 interface CartItem {
   _id: string;
@@ -44,7 +45,7 @@ const CartPage = () => {
 
   // Fetch user data with React Query
   const { data: user } = useQuery({
-    queryKey: ["user"],
+    queryKey: userQueryKeys.current(),
     queryFn: () => getCurrentUser(),
   });
 

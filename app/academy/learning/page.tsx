@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCurrentUser } from "@/lib/actions/sanity.actions";
 import { LearningCourseCard } from "@/components/CourseCard";
+import { userQueryKeys } from "@/lib/query-keys";
 
 interface EnrolledCourse {
   _id: string;
@@ -26,29 +27,17 @@ const MyLearningPage = () => {
     "all" | "in-progress" | "completed"
   >("all");
 
-  // Fetch user with enrolled courses using React Query
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["learning"],
-    queryFn: async () => {
-      const userData = await getCurrentUser();
-      return {
-        ...userData,
-        enrolledCourses: (userData?.enrolledCourses || []).map(
-          (course: EnrolledCourse) => ({
-            ...course,
-            status: (course.status || "in-progress") as
-              | "in-progress"
-              | "completed",
-          }),
-        ),
-      };
-    },
+  const { data: enrolledCourses = [], isLoading } = useQuery({
+    queryKey: userQueryKeys.current(),
+    queryFn: getCurrentUser,
+    select: (user) =>
+      (user?.enrolledCourses || []).map((course: EnrolledCourse) => ({
+        ...course,
+        status: (course.status || "in-progress") as
+          | "in-progress"
+          | "completed",
+      })),
   });
-
-  const enrolledCourses = useMemo(
-    () => user?.enrolledCourses || [],
-    [user?.enrolledCourses],
-  );
 
   // Filter courses
   const filteredCourses = useMemo(

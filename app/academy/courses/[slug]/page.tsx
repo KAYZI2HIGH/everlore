@@ -9,12 +9,14 @@ import { usePaystack } from "@/hooks/usePaystack";
 import { useWishlist } from "@/hooks/useWishlist";
 import { getCourseBySlug, getCurrentUser } from "@/lib/actions/sanity.actions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { academyQueryKeys, userQueryKeys } from "@/lib/query-keys";
 import {
   Award,
   CheckCircle,
   ChevronDown,
   Clock,
   Heart,
+  Lock,
   Play,
   Star,
   Users,
@@ -85,14 +87,14 @@ const CourseDetailsPage = () => {
 
   // Fetch course by slug
   const { data: course, isLoading: courseLoading } = useQuery({
-    queryKey: ["course", slug],
+    queryKey: academyQueryKeys.course(slug),
     queryFn: () => getCourseBySlug(slug),
     enabled: !!slug,
   });
 
   // Fetch current user to check enrollment
   const { data: user } = useQuery({
-    queryKey: ["user"],
+    queryKey: userQueryKeys.current(),
     queryFn: () => getCurrentUser(),
   });
 
@@ -125,12 +127,11 @@ const CourseDetailsPage = () => {
     if (!course) return;
     setAddingToWishlist(true);
     try {
+      const wasInWishlist = isInWishlist(course._id);
       await toggleWishlistAsync(course._id);
-      if (isInWishlist(course._id)) {
-        toast.success("Removed from wishlist!");
-      } else {
-        toast.success("Added to wishlist!");
-      }
+      toast.success(
+        wasInWishlist ? "Removed from wishlist!" : "Added to wishlist!",
+      );
     } catch (error: any) {
       console.error("Error toggling wishlist:", error);
       toast.error(error?.message || "Failed to update wishlist");
@@ -226,13 +227,8 @@ const CourseDetailsPage = () => {
                 {!isPurchased && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
                     <div className="text-center">
-                      <div className="bg-slate-900/80 rounded-lg p-8 max-w-sm">
-                        <p className="text-white text-lg font-semibold mb-2">
-                          This course is locked
-                        </p>
-                        <p className="text-slate-300 text-sm">
-                          Purchase the course to access the video content
-                        </p>
+                      <div className="rounded-full w-24 h-24 flex items-center justify-center">
+                        <Lock className="w-12 h-12 text-white" />
                       </div>
                     </div>
                   </div>
@@ -308,7 +304,7 @@ const CourseDetailsPage = () => {
                   key={idx}
                   className="flex gap-3"
                 >
-                  <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-1" />
+                  <CheckCircle className="w-5 h-5 text-brand shrink-0 mt-1" />
                   <span className="text-slate-700">{point}</span>
                 </div>
               ))}
@@ -331,7 +327,7 @@ const CourseDetailsPage = () => {
                     key={idx}
                     className="flex gap-3"
                   >
-                    <Icon className="w-6 h-6 text-emerald-600 shrink-0" />
+                    <Icon className="w-6 h-6 text-brand shrink-0" />
                     <div>
                       <p className="font-semibold text-slate-900">{text}</p>
                     </div>
@@ -452,17 +448,17 @@ const CourseDetailsPage = () => {
 
         {/* Sidebar - Course Card */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 bg-white border border-slate-200 rounded-lg p-6">
+          <div className="sticky top-24 bg-brand border border-slate-200 rounded-lg p-6">
             {!isPurchased ?
               <>
                 {/* Price */}
                 <div className="mb-6">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-slate-900">
+                    <span className="text-4xl font-bold text-white">
                       ₦{course.price?.toLocaleString() || "0"}
                     </span>
                   </div>
-                  <p className="text-sm text-emerald-600 font-semibold mt-2">
+                  <p className="text-sm text-brand font-semibold mt-2">
                     Special price
                   </p>
                 </div>
@@ -472,15 +468,15 @@ const CourseDetailsPage = () => {
                   <Button
                     onClick={handleAddToCart}
                     disabled={addingToCart}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 disabled:opacity-50"
+                    className="w-full bg-white hover:bg-white/90 text-black py-3 disabled:opacity-50"
                   >
                     {addingToCart ? "Adding to cart..." : "Add to cart"}
                   </Button>
                   <Button
                     onClick={handleToggleWishlist}
                     disabled={addingToWishlist}
-                    variant="outline"
-                    className="w-full py-3 border-slate-300 disabled:opacity-50"
+                    variant="ghost"
+                    className="w-full py-3 border-slate-300 text-white! border! hover:bg-transparent disabled:opacity-50"
                   >
                     <Heart
                       className={`w-4 h-4 mr-2 ${
@@ -499,21 +495,21 @@ const CourseDetailsPage = () => {
               </>
             : <>
                 {/* Purchased Badge */}
-                <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <div className="mb-6 p-4 bg-brand/10 border border-brand/30 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-5 h-5 text-emerald-600" />
-                    <p className="font-semibold text-emerald-900">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                    <p className="font-semibold text-white">
                       Course Purchased
                     </p>
                   </div>
-                  <p className="text-sm text-emerald-700">
+                  <p className="text-sm text-white">
                     You have full access to this course
                   </p>
                 </div>
 
                 {/* Access Course Button */}
                 <Link href="/academy/learning">
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 mb-3">
+                  <Button className="w-full bg-brand hover:bg-brand/90 text-white py-3 mb-3">
                     Continue Learning →
                   </Button>
                 </Link>
@@ -529,7 +525,7 @@ const CourseDetailsPage = () => {
                 {courseProgress === 100 && (
                   <Button
                     variant="outline"
-                    className="w-full mb-3 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                    className="w-full mb-3 border-brand/40 text-white hover:bg-brand/10"
                   >
                     Download Certificate
                   </Button>
@@ -540,22 +536,22 @@ const CourseDetailsPage = () => {
             {/* Course Info */}
             <div className="space-y-4 border-t border-slate-200 pt-6">
               <div>
-                <p className="text-sm text-slate-600 mb-1">Language</p>
-                <p className="font-semibold text-slate-900">English</p>
+                <p className="text-sm text-white/70 mb-1">Language</p>
+                <p className="font-semibold text-white">English</p>
               </div>
               <div>
-                <p className="text-sm text-slate-600 mb-1">Level</p>
-                <p className="font-semibold text-slate-900">{course.level}</p>
+                <p className="text-sm text-white/70 mb-1">Level</p>
+                <p className="font-semibold text-white">{course.level}</p>
               </div>
               <div>
-                <p className="text-sm text-slate-600 mb-1">Duration</p>
-                <p className="font-semibold text-slate-900">
+                <p className="text-sm text-white/70 mb-1">Duration</p>
+                <p className="font-semibold text-white">
                   {course.duration} hours
                 </p>
               </div>
               <div>
-                <p className="text-sm text-slate-600 mb-1">Category</p>
-                <p className="font-semibold text-slate-900">
+                <p className="text-sm text-white/70 mb-1">Category</p>
+                <p className="font-semibold text-white">
                   {course.category}
                 </p>
               </div>

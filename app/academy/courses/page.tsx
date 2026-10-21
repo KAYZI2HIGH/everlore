@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { AcademyBreadcrumbBar } from "@/components/academy/AcademyBreadcrumbBar";
@@ -15,6 +15,8 @@ import {
 } from "@/lib/actions/sanity.actions";
 import { CourseListSkeleton } from "@/components/skeletons/CourseCardSkeleton";
 import { useCart } from "@/hooks/useCart";
+import { useQuery } from "@tanstack/react-query";
+import { academyQueryKeys, userQueryKeys } from "@/lib/query-keys";
 
 interface Course {
   _id: string;
@@ -35,64 +37,46 @@ interface Course {
 type EnrollmentRef = string | { _ref?: string; _id?: string };
 
 const CoursePage = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedDuration, setSelectedDuration] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
   const { addToCartAsync, cartItems } = useCart();
+
+  const { data: courses = [], isLoading: coursesLoading } = useQuery<Course[]>({
+    queryKey: academyQueryKeys.courses(),
+    queryFn: getAllCourses,
+  });
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery<string[]>({
+    queryKey: academyQueryKeys.categories(),
+    queryFn: getUniqueCategories,
+  });
+  const { data: user } = useQuery({
+    queryKey: userQueryKeys.current(),
+    queryFn: getCurrentUser,
+  });
+
+  const enrolledCourseIds = useMemo(
+    () =>
+      (user?.enrolledCourses || [])
+        .map((course: EnrollmentRef) =>
+          typeof course === "object" && course !== null
+            ? "_ref" in course
+              ? String(course._ref)
+              : "_id" in course
+                ? String(course._id)
+                : ""
+            : String(course),
+        )
+        .filter(Boolean),
+    [user?.enrolledCourses],
+  );
 
   // Get cart item IDs
   const cartItemIds =
     cartItems?.map((item: { _id: string }) => item._id) || [];
 
-  // Fetch categories, courses, and user enrollment data on mount
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [courseData, categoryData, userData] = await Promise.all([
-          getAllCourses(),
-          getUniqueCategories(),
-          getCurrentUser(),
-        ]);
-        setCourses(courseData);
-        setFilteredCourses(courseData);
-        setCategories(categoryData);
-
-        // Get enrolled course IDs
-        if (userData?.enrolledCourses) {
-          const enrolled = userData.enrolledCourses
-            .map((course: EnrollmentRef) =>
-              typeof course === "object" && course !== null
-                ? "_ref" in course
-                  ? String(course._ref)
-                  : "_id" in course
-                    ? String(course._id)
-                    : ""
-                : String(course),
-            )
-            .filter(Boolean);
-          setEnrolledCourseIds(enrolled);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // Filter courses based on categories and enrollment status
-  useEffect(() => {
-    let filtered = courses;
-
-    // Filter out purchased courses
-    filtered = filtered.filter(
+  const filteredCourses = useMemo(() => {
+    let filtered = courses.filter(
       (course) => !enrolledCourseIds.includes(course._id),
     );
 
@@ -114,21 +98,16 @@ const CoursePage = () => {
       });
     }
 
-    setFilteredCourses(filtered);
-  }, [
-    selectedCategory,
-    selectedLevel,
-    selectedDuration,
-    courses,
-    enrolledCourseIds,
-  ]);
+    return filtered;
+  }, [courses, enrolledCourseIds, selectedCategory, selectedLevel, selectedDuration]);
 
   const handleClearFilters = () => {
     setSelectedCategory("");
     setSelectedLevel("");
     setSelectedDuration("");
-    setFilteredCourses(courses);
   };
+
+  const isLoading = coursesLoading || categoriesLoading;
 
   const handleAddToCart = async (courseId: string) => {
     try {
@@ -163,7 +142,7 @@ const CoursePage = () => {
             options={(categories.length > 0 ?
               categories
             : ["Design", "Development", "Business", "Marketing"]
-            ).map((category) => ({ label: category, value: category }))}
+            ).map((category: string) => ({ label: category, value: category }))}
           />
           <AcademyFilterSelect
             id="course-level"

@@ -4,6 +4,7 @@ import {
   enrollUserInCourses,
   verifyPaystackPayment,
 } from "@/lib/actions/sanity.actions";
+import { userQueryKeys } from "@/lib/query-keys";
 
 interface PaymentConfig {
   email: string;
@@ -70,13 +71,7 @@ export const usePaystack = (queryClientOverride?: any) => {
 
       // Refetch relevant queries after successful enrollment
       console.log("🔄 Refetching queries...");
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: ["user"] }),
-        queryClient.refetchQueries({ queryKey: ["courses"] }),
-        queryClient.refetchQueries({ queryKey: ["course"] }),
-        queryClient.refetchQueries({ queryKey: ["cart"] }),
-        queryClient.refetchQueries({ queryKey: ["learning"] }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: userQueryKeys.current() });
       console.log("✓ Queries refetched successfully!");
 
       return Promise.resolve();

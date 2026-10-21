@@ -4,17 +4,16 @@ import {
   addToWishlist,
   removeFromWishlist,
 } from "@/lib/actions/sanity.actions";
+import { userQueryKeys } from "@/lib/query-keys";
 
 export const useWishlist = () => {
   const queryClient = useQueryClient();
 
   // Fetch wishlist items
   const { data: wishlistItems = [], isLoading } = useQuery({
-    queryKey: ["wishlist"],
-    queryFn: async () => {
-      const user = await getCurrentUser();
-      return user?.wishlist || [];
-    },
+    queryKey: userQueryKeys.current(),
+    queryFn: getCurrentUser,
+    select: (user) => user?.wishlist || [],
   });
 
   // Check if a specific course is in wishlist
@@ -24,66 +23,92 @@ export const useWishlist = () => {
 
   // Add to wishlist mutation with optimistic update
   const addToWishlistMutation = useMutation({
-    mutationFn: (courseId: string) => addToWishlist(courseId),
+    mutationFn: async (courseId: string) => {
+      const result = await addToWishlist(courseId);
+      if (result.error) throw new Error(result.error);
+      return result;
+    },
     onMutate: async (courseId: string) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["wishlist"] });
+      await queryClient.cancelQueries({ queryKey: userQueryKeys.current() });
 
       // Get previous data
-      const previousWishlist = queryClient.getQueryData(["wishlist"]);
+      const previousUser = queryClient.getQueryData(
+        userQueryKeys.current(),
+      );
 
       // Optimistically update the cache - add a placeholder item
-      queryClient.setQueryData(["wishlist"], (old: any) => {
-        if (!Array.isArray(old)) return old;
+      queryClient.setQueryData(userQueryKeys.current(), (user: any) => {
+        if (!user) return user;
         // Check if already in wishlist
-        if (old.some((item: any) => item._id === courseId)) {
-          return old;
+        if ((user.wishlist || []).some((item: any) => item._id === courseId)) {
+          return user;
         }
         // Add optimistic item
-        return [...old, { _id: courseId, _optimistic: true }];
+        return {
+          ...user,
+          wishlist: [...(user.wishlist || []), { _id: courseId, _optimistic: true }],
+        };
       });
 
-      return { previousWishlist };
+      return { previousUser };
     },
     onError: (error, courseId, context: any) => {
       // Rollback on error
-      if (context?.previousWishlist) {
-        queryClient.setQueryData(["wishlist"], context.previousWishlist);
+      if (context?.previousUser) {
+        queryClient.setQueryData(
+          userQueryKeys.current(),
+          context.previousUser,
+        );
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Refetch wishlist to get updated data with all fields
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+      await queryClient.invalidateQueries({ queryKey: userQueryKeys.current() });
     },
   });
 
   // Remove from wishlist mutation with optimistic update
   const removeFromWishlistMutation = useMutation({
-    mutationFn: (courseId: string) => removeFromWishlist(courseId),
+    mutationFn: async (courseId: string) => {
+      const result = await removeFromWishlist(courseId);
+      if (result.error) throw new Error(result.error);
+      return result;
+    },
     onMutate: async (courseId: string) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["wishlist"] });
+      await queryClient.cancelQueries({ queryKey: userQueryKeys.current() });
 
       // Get previous data
-      const previousWishlist = queryClient.getQueryData(["wishlist"]);
+      const previousUser = queryClient.getQueryData(
+        userQueryKeys.current(),
+      );
 
       // Optimistically update the cache - remove the item
-      queryClient.setQueryData(["wishlist"], (old: any) => {
-        if (!Array.isArray(old)) return old;
-        return old.filter((item: any) => item._id !== courseId);
+      queryClient.setQueryData(userQueryKeys.current(), (user: any) => {
+        if (!user) return user;
+        return {
+          ...user,
+          wishlist: (user.wishlist || []).filter(
+            (item: any) => item._id !== courseId,
+          ),
+        };
       });
 
-      return { previousWishlist };
+      return { previousUser };
     },
     onError: (error, courseId, context: any) => {
       // Rollback on error
-      if (context?.previousWishlist) {
-        queryClient.setQueryData(["wishlist"], context.previousWishlist);
+      if (context?.previousUser) {
+        queryClient.setQueryData(
+          userQueryKeys.current(),
+          context.previousUser,
+        );
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Refetch wishlist to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+      await queryClient.invalidateQueries({ queryKey: userQueryKeys.current() });
     },
   });
 

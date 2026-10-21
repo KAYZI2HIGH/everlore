@@ -308,7 +308,6 @@ export async function getAllCourses() {
         _id,
         title,
         slug,
-        description,
         image,
         price,
         instructor,
@@ -317,12 +316,6 @@ export async function getAllCourses() {
         duration,
         students,
         rating,
-        videoUrl,
-        learningPoints,
-        "highlights": highlights[]{title},
-        "modules": modules[]{title, lessons, duration},
-        "faqs": faqs[]{question, answer},
-        "reviews": reviews[]{author, rating, text},
         createdAt
       }`,
     );
