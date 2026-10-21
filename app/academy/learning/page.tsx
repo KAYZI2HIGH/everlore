@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import Image from "next/image";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { BreadcrumbUI } from "@/components/BreadcrumbUi";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Search, Clock, CheckCircle, Star, MoreVertical } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getCurrentUser } from "@/lib/actions/sanity.actions";
+import { LearningCourseCard } from "@/components/CourseCard";
 
 interface EnrolledCourse {
   _id: string;
@@ -47,7 +45,10 @@ const MyLearningPage = () => {
     },
   });
 
-  const enrolledCourses = user?.enrolledCourses || [];
+  const enrolledCourses = useMemo(
+    () => user?.enrolledCourses || [],
+    [user?.enrolledCourses],
+  );
 
   // Filter courses
   const filteredCourses = useMemo(
@@ -78,166 +79,39 @@ const MyLearningPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 bg-white border-b border-slate-200">
-        <BreadcrumbUI
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Academy", href: "/academy/courses" },
-            { label: "My Learning", href: "/academy/learning" },
-          ]}
-        />
-      </div>
-
-      {/* Header and Filters Container */}
-      <div className="px-6 md:px-20 py-8 bg-white">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 mb-6">
-          {/* Header */}
-          <div className="shrink-0">
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">
-              My Learning
-            </h1>
-            <p className="text-slate-600">
-              Continue learning with your enrolled courses
-            </p>
-          </div>
-
-          {/* Filters and Search */}
-          <div className="flex-1 lg:max-w-sm space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <Input
-                type="text"
-                placeholder="Search courses or instructors..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-3 text-base"
-              />
-            </div>
-
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={() => setSelectedFilter("all")}
-                className={`text-sm ${
-                  selectedFilter === "all" ?
-                    "bg-emerald-600 text-white"
-                  : "bg-slate-100 text-slate-900 hover:bg-slate-200"
-                }`}
-              >
-                All ({stats.total})
-              </Button>
-              <Button
-                onClick={() => setSelectedFilter("in-progress")}
-                className={`text-sm ${
-                  selectedFilter === "in-progress" ?
-                    "bg-emerald-600 text-white"
-                  : "bg-slate-100 text-slate-900 hover:bg-slate-200"
-                }`}
-              >
-                In Progress ({stats.inProgress})
-              </Button>
-              <Button
-                onClick={() => setSelectedFilter("completed")}
-                className={`text-sm ${
-                  selectedFilter === "completed" ?
-                    "bg-emerald-600 text-white"
-                  : "bg-slate-100 text-slate-900 hover:bg-slate-200"
-                }`}
-              >
-                Completed ({stats.completed})
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-background">
       {/* Course Grid */}
-      <div className="px-6 md:px-20 py-8">
+      <div className="mx-auto max-w-6xl px-4">
         {isLoading ?
-          <div className="bg-white rounded-lg p-12 text-center">
-            <p className="text-slate-600">Loading your courses...</p>
-          </div>
+          <Card className="border-border p-12 text-center shadow-none">
+            <Skeleton className="mx-auto h-5 w-48" />
+            <Skeleton className="mx-auto mt-3 h-4 w-64" />
+          </Card>
         : filteredCourses.length === 0 ?
-          <div className="bg-white rounded-lg p-12 text-center">
-            <p className="text-slate-600 text-lg mb-4">
+          <Card className="border-border p-12 text-center shadow-none">
+            <p className="mb-4 text-lg text-muted-foreground">
               {enrolledCourses.length === 0 ?
                 "You haven't enrolled in any courses yet"
               : "No courses found matching your criteria"}
             </p>
             <Link href="/academy/courses">
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
+              <Button className="bg-academy-accent text-academy-accent-foreground hover:bg-academy-accent/90">
                 Browse Courses
               </Button>
             </Link>
-          </div>
-        : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          </Card>
+        : <div className="grid gap-x-4 gap-y-8 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
             {filteredCourses.map((course: EnrolledCourse) => (
-              <Link
+              <LearningCourseCard
                 key={course._id}
-                href={`/academy/courses/${course.slug.current}`}
-                className="group"
-              >
-                <div className="bg-white rounded-lg overflow-hidden border border-slate-200 hover:border-emerald-300 hover:shadow-lg transition-all duration-300">
-                  {/* Thumbnail */}
-                  <div className="relative w-full h-40 bg-slate-200 overflow-hidden">
-                    <Image
-                      src={course.image || "/academy.avif"}
-                      alt={course.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex items-end">
-                      <div className="p-3 w-full">
-                        <Badge
-                          className={`${
-                            course.status === "completed" ?
-                              "bg-blue-600 hover:bg-blue-700"
-                            : "bg-emerald-600 hover:bg-emerald-700"
-                          } text-white`}
-                        >
-                          {course.status === "completed" ?
-                            <>
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Completed
-                            </>
-                          : <>
-                              <Clock className="w-3 h-3 mr-1" />
-                              In Progress
-                            </>
-                          }
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 space-y-3">
-                    {/* Title */}
-                    <h3 className="font-semibold text-slate-900 line-clamp-2 group-hover:text-emerald-600 transition-colors">
-                      {course.title}
-                    </h3>
-
-                    {/* Instructor & Rating */}
-                    <div className="flex items-center justify-between text-sm">
-                      <p className="text-slate-600">{course.instructor}</p>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold text-slate-900">
-                          {course.rating}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Action Button */}
-                    <Button className="w-full mt-2 bg-slate-100 text-slate-900 hover:bg-slate-200">
-                      Continue Learning
-                    </Button>
-                  </div>
-                </div>
-              </Link>
+                slug={course.slug.current}
+                title={course.title}
+                instructor={course.instructor}
+                thumbnail={course.image}
+                rating={course.rating}
+                students={course.students}
+                status={course.status}
+              />
             ))}
           </div>
         }

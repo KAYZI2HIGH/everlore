@@ -1,14 +1,11 @@
-import AcademyFooter from "@/components/AcademyFooter";
-import AcademyNavbar from "@/components/AcademyNavbar";
-import { AdvertBanner } from "@/components/AdvertBanner";
+import { Header } from "@/components/header";
 
 const AcademyLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div>
+    <div className="pt-16">
       {/* <AdvertBanner /> */}
-      <AcademyNavbar />
+      <Header maxwidth={true} />
       {children}
-      <AcademyFooter />
     </div>
   );
 };

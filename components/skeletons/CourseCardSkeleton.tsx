@@ -2,44 +2,37 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function CourseCardSkeleton() {
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
+    <div className="col-span-1 min-w-0">
       {/* Image skeleton */}
-      <Skeleton className="w-full h-48" />
+      <Skeleton className="aspect-[16/10] w-full rounded-lg" />
 
       {/* Content */}
-      <div className="p-4 space-y-4">
-        {/* Category and rating */}
-        <div className="flex items-start justify-between">
-          <Skeleton className="h-6 w-24" />
-          <Skeleton className="h-5 w-16" />
+      <div className="mt-2 space-y-2">
+        <div className="flex items-start justify-between gap-3">
+          <Skeleton className="h-6 w-3/5" />
+          <Skeleton className="h-6 w-20" />
         </div>
-
-        {/* Title */}
-        <div className="space-y-2">
-          <Skeleton className="h-5 w-full" />
-          <Skeleton className="h-5 w-3/4" />
-        </div>
-
-        {/* Instructor and students */}
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-4 w-24" />
-        </div>
-
-        {/* Price and button */}
-        <div className="flex items-center justify-between pt-2">
-          <Skeleton className="h-7 w-20" />
-          <Skeleton className="h-10 w-32" />
-        </div>
+        <Skeleton className="h-4 w-2/5" />
+      </div>
+      <div className="flex items-center gap-2 py-1">
+        <Skeleton className="h-4 w-10" />
+        <Skeleton className="h-[10px] w-px" />
+        <Skeleton className="h-4 w-12" />
+        <Skeleton className="h-[10px] w-px" />
+        <Skeleton className="h-4 w-16" />
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <Skeleton className="h-7 w-28" />
+        <Skeleton className="h-10 w-16" />
       </div>
     </div>
   );
 }
 
-export function CourseListSkeleton() {
+export function CourseListSkeleton({ length = 8 }: { length?: number }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {Array.from({ length: 6 }).map((_, i) => (
+    <div className="grid grid-cols-1 gap-x-4 gap-y-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length }).map((_, i) => (
         <CourseCardSkeleton key={i} />
       ))}
     </div>

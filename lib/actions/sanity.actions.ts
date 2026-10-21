@@ -1,14 +1,46 @@
 "use server";
 
-import { client } from "@/lib/sanity";
+import type { Session } from "next-auth";
+import { client, freshClient } from "@/lib/sanity";
 import { auth } from "@/lib/auth";
 import imageUrlBuilder from "@sanity/image-url";
 
 const builder = imageUrlBuilder(client);
 
+async function getUserBySession(session: Session | null) {
+  if (!session?.user) return null;
+
+  const userId = session.user.id as string | undefined;
+  const email = session.user.email as string | undefined;
+
+  if (userId) {
+    const byId = await freshClient.fetch(
+      `*[_type == "user" && _id == $userId][0] {
+        _id,
+        name,
+        email,
+        image,
+        enrolledCourses[] -> { _id, title, slug },
+        wishlist[] -> { _id, title, slug, instructor, price, rating, students, image, category, level, description },
+        cart[] -> { _id, title, price, instructor, image, rating, level, category, students, description },
+        createdAt
+      }`,
+      { userId },
+    );
+
+    if (byId) return byId;
+  }
+
+  if (email) {
+    return getUserByEmail(email);
+  }
+
+  return null;
+}
+
 export async function getUserByEmail(email: string) {
   try {
-    const user = await client.fetch(
+    const user = await freshClient.fetch(
       `*[_type == "user" && email == $email][0] {
         _id,
         name,
@@ -31,11 +63,11 @@ export async function getUserByEmail(email: string) {
 export async function getCurrentUser() {
   try {
     const session = await auth();
-    if (!session?.user?.email) {
+    if (!session?.user) {
       return null;
     }
 
-    return await getUserByEmail(session.user.email);
+    return await getUserBySession(session);
   } catch (error) {
     console.error("Error getting current user:", error);
     return null;
@@ -45,20 +77,32 @@ export async function getCurrentUser() {
 export async function addToCart(courseId: string) {
   try {
     const session = await auth();
-    if (!session?.user?.email) {
+    if (!session?.user) {
       return { error: "Not authenticated" };
     }
 
-    const user = await client.fetch(
-      `*[_type == "user" && email == $email][0]`,
-      { email: session.user.email },
+    const user = await freshClient.fetch(
+      `*[_type == "user" && (_id == $userId || email == $email)][0] {
+        _id,
+        "cartRefs": cart[]{_ref}
+      }`,
+      {
+        userId: session.user.id || "",
+        email: session.user.email || "",
+      },
     );
 
     if (!user) {
       return { error: "User not found" };
     }
 
-    const isInCart = user.cart?.some(
+    console.log("[addToCart] before commit:", {
+      userId: user._id,
+      courseId,
+      cartRefs: user.cartRefs || [],
+    });
+
+    const isInCart = user.cartRefs?.some(
       (ref: { _ref: string }) => ref._ref === courseId,
     );
 
@@ -66,16 +110,41 @@ export async function addToCart(courseId: string) {
       return { error: "Already in cart" };
     }
 
-    await client
-      .patch(user._id)
-      .append("cart", [
-        {
-          _key: `cart-${courseId}-${Date.now()}`,
-          _type: "reference",
-          _ref: courseId,
-        },
-      ])
-      .commit();
+    const cartReference = {
+      _key: `cart-${courseId}-${Date.now()}`,
+      _type: "reference",
+      _ref: courseId,
+    };
+
+    const cartPatch = freshClient.patch(user._id);
+
+    if (Array.isArray(user.cartRefs)) {
+      await cartPatch.append("cart", [cartReference]).commit();
+    } else {
+      await cartPatch.set({ cart: [cartReference] }).commit();
+    }
+
+    const updatedUser = await freshClient.fetch(
+      `*[_id == $userId][0] {
+        _id,
+        "cartRefs": cart[]{_ref}
+      }`,
+      { userId: user._id },
+    );
+
+    console.log("[addToCart] after commit:", {
+      userId: user._id,
+      courseId,
+      cartRefs: updatedUser?.cartRefs || [],
+    });
+
+    if (
+      !updatedUser?.cartRefs?.some(
+        (ref: { _ref: string }) => ref._ref === courseId,
+      )
+    ) {
+      return { error: "Cart update could not be verified" };
+    }
 
     return { success: true };
   } catch (error) {
@@ -92,7 +161,7 @@ export async function removeFromCart(courseId: string) {
       return { error: "Not authenticated" };
     }
 
-    const user = await client.fetch(
+    const user = await freshClient.fetch(
       `*[_type == "user" && email == $email][0]`,
       { email: session.user.email },
     );
@@ -101,7 +170,7 @@ export async function removeFromCart(courseId: string) {
       return { error: "User not found" };
     }
 
-    await client
+    await freshClient
       .patch(user._id)
       .unset([`cart[_ref == "${courseId}"]`])
       .commit();

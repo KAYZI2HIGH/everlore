@@ -6,22 +6,28 @@ import { cn } from "@/lib/utils";
 import { MenuToggleIcon } from "@/components/menu-toggle-icon";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { CircleUserRound, ShoppingCart } from "lucide-react";
+import ProfileDropdown from "./ProfileDropdown";
+import { useCart } from "@/hooks/useCart";
+import { useSession } from "next-auth/react";
 
-export function Header() {
+export function Header({maxwidth}: {maxwidth?: boolean}) {
   const [open, setOpen] = React.useState(false);
+  const { cartCount } = useCart();
+  const { data: session } = useSession();
 
   const links = [
     {
-      label: "Features",
-      href: "#features",
+      label: "Explore Courses",
+      href: "/academy/courses",
     },
     {
-      label: "Testimonials",
-      href: "#testimonials",
+      label: "Read Our Blogs",
+      href: "/blogs",
     },
     {
-      label: "Contact",
-      href: "#contact",
+      label: "Career Opportunities",
+      href: "/hiring",
     },
   ];
 
@@ -51,9 +57,21 @@ export function Header() {
   }, [open]);
 
   return (
-    <header className="fixed top-0 z-1000 w-full border-b border-border bg-background/95 backdrop-blur-lg supports-backdrop-filter:bg-background/50">
-      <nav className="mx-auto flex h-14 w-full items-center justify-between p-10 px-5 md:px-10">
-        <Link href="/" className="w-full" aria-label="Everlore home">
+    <header
+      className={
+        "fixed top-0 z-1000 w-full border-b border-border bg-background/95 backdrop-blur-lg supports-backdrop-filter:bg-background/50"
+      }
+    >
+      <nav
+        className={cn(
+          "mx-auto flex h-14 w-full items-center justify-between p-8 max-md:px-5",
+          maxwidth ? "max-w-6xl" : "max-w-full",)}
+      >
+        <Link
+          href="/"
+          className="w-full"
+          aria-label="Everlore home"
+        >
           <Logo className="-ml-16" />
         </Link>
         <div className="hidden items-center gap-2 md:flex">
@@ -62,20 +80,38 @@ export function Header() {
               key={link.label}
               className={buttonVariants({ variant: "ghost" })}
               href={link.href}
-              onClick={(e) => handleSmoothScroll(e, link.href)}
             >
               {link.label}
             </a>
           ))}
-          <Button
-            variant="outline"
-            asChild
-          >
-            <Link href="/sign-in">Sign In</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/sign-up">Get Started</Link>
-          </Button>
+          {!session?.user ?
+            <>
+              <Button
+                variant="outline"
+                asChild
+              >
+                <Link href="/sign-in">Sign In</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/sign-up">Get Started</Link>
+              </Button>
+            </>
+          : <div className="hidden md:flex items-center gap-2">
+              {/* User Profile Dropdown */}
+              <ProfileDropdown>
+                <img
+                  src={
+                    session?.user?.image ||
+                    "https://api.dicebear.com/7.x/avataaars/svg?seed=User"
+                  }
+                  alt="Avatar"
+                  width={40}
+                  height={40}
+                  className="shrink-0 rounded-full border-2 border-emerald-400"
+                />
+              </ProfileDropdown>
+            </div>
+          }
         </div>
         <Button
           size="icon"

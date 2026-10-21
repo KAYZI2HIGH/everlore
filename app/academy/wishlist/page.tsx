@@ -6,6 +6,8 @@ import Link from "next/link";
 import { BreadcrumbUI } from "@/components/BreadcrumbUi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Trash2, ShoppingCart } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/hooks/useCart";
@@ -44,8 +46,12 @@ const WishlistPage = () => {
     try {
       await removeFromWishlist(courseId);
       toast.success("Removed from wishlist!");
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to remove from wishlist");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to remove from wishlist",
+      );
     } finally {
       setTogglingWishlist(null);
     }
@@ -56,9 +62,11 @@ const WishlistPage = () => {
     try {
       await addToCartAsync(courseId);
       toast.success("Course added to cart!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding to cart:", error);
-      toast.error(error?.message || "Failed to add course to cart");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add course to cart",
+      );
     } finally {
       setAddingToCart(null);
     }
@@ -107,72 +115,42 @@ const WishlistPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 border-b border-slate-200">
-        <BreadcrumbUI
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Academy", href: "/academy/courses" },
-            { label: "Wishlist", href: "/academy/wishlist" },
-          ]}
-        />
-      </div>
+    <div className="min-h-screen bg-background">
 
-      {/* Header */}
-      <div className="px-6 md:px-20 py-8 pb-0">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Wishlist</h1>
-        <p className="text-slate-600">
-          Manage your wishlist items and add them to your cart when ready.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 px-6 md:px-20 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-8 px-6">
         {/* Main Content */}
-        <div className="lg:col-span-3">
-          {/* Search */}
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <Input
-                type="text"
-                placeholder="Search wishlist..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-3"
-              />
-            </div>
-          </div>
+        <div className="lg:col-span-4">
 
           {isLoading ?
-            <div className="py-12 text-center">
-              <p className="text-slate-600">Loading your wishlist...</p>
-            </div>
+            <Card className="border-border p-12 text-center shadow-none">
+              <Skeleton className="mx-auto h-5 w-48" />
+              <Skeleton className="mx-auto mt-3 h-4 w-64" />
+            </Card>
           : filteredItems.length === 0 ?
-            <div className="py-12 text-center">
-              <p className="text-slate-600 text-lg mb-4">
+            <Card className="border-border py-12 text-center shadow-none">
+              <p className="mb-4 text-lg text-muted-foreground">
                 {searchQuery ?
                   "No courses found in your wishlist"
                 : "Your wishlist is empty"}
               </p>
               <Link href="/academy/courses">
-                <Button className="bg-emerald-600 hover:bg-emerald-700">
+                <Button className="bg-academy-accent text-academy-accent-foreground hover:bg-academy-accent/90">
                   Browse Courses
                 </Button>
               </Link>
-            </div>
+            </Card>
           : <div className="space-y-3">
               {filteredItems.map((item: WishlistItem) => (
                 <div
                   key={item._id}
-                  className="border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors"
+                  className="rounded-lg border border-border p-4 transition-colors hover:border-academy-accent/50"
                 >
                   <div className="flex gap-4">
                     {/* Thumbnail */}
                     <Link
                       href={`/academy/courses/${item.slug?.current || item._id}`}
                     >
-                      <div className="relative w-24 h-24 rounded overflow-hidden bg-slate-200 shrink-0 hover:opacity-80 transition-opacity">
+                      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded bg-muted transition-opacity hover:opacity-80">
                         <Image
                           src={item.image || "/academy.avif"}
                           alt={item.title}
@@ -187,14 +165,14 @@ const WishlistPage = () => {
                       <Link
                         href={`/academy/courses/${item.slug?.current || item._id}`}
                       >
-                        <h3 className="font-semibold text-slate-900 hover:text-emerald-600 transition-colors line-clamp-2 mb-1">
+                        <h3 className="mb-1 line-clamp-2 font-semibold text-brand transition-colors hover:text-academy-accent">
                           {item.title}
                         </h3>
                       </Link>
-                      <p className="text-sm text-slate-600 mb-2">
+                      <p className="mb-2 text-sm text-muted-foreground">
                         {item.instructor}
                       </p>
-                      <div className="flex flex-wrap gap-3 text-xs text-slate-600">
+                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <span className="w-3 h-3" />
                           {item.rating}
@@ -207,7 +185,7 @@ const WishlistPage = () => {
                     {/* Price & Actions */}
                     <div className="flex flex-col items-end justify-between gap-2">
                       <div className="text-right">
-                        <p className="text-xl font-bold text-slate-900">
+                        <p className="text-xl font-bold text-foreground">
                           ₦{item.price.toLocaleString()}
                         </p>
                       </div>
@@ -216,7 +194,7 @@ const WishlistPage = () => {
                         <button
                           onClick={() => handleRemoveFromWishlist(item._id)}
                           disabled={togglingWishlist === item._id}
-                          className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          className="rounded p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
                           title="Remove from wishlist"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -225,7 +203,7 @@ const WishlistPage = () => {
                           onClick={() => handleAddToCart(item._id)}
                           disabled={addingToCart === item._id}
                           size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+                          className="bg-academy-accent text-academy-accent-foreground hover:bg-academy-accent/90 disabled:opacity-50"
                         >
                           <ShoppingCart className="w-4 h-4 mr-1" />
                           {addingToCart === item._id ? "Adding..." : "Add"}
@@ -240,28 +218,28 @@ const WishlistPage = () => {
         </div>
 
         {/* Sidebar Summary */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-24 bg-slate-50 border border-slate-200 rounded-lg p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">
+        <div className="lg:col-span-2">
+          <Card className="sticky top-24 border-border bg-brand p-6 shadow-none">
+            <h3 className="mb-4 font-semibold text-white">
               Wishlist Summary
             </h3>
 
-            <div className="space-y-4 pb-4 border-b border-slate-200 mb-4">
+            <div className="mb-1 space-y-4 border-b border-border pb-4">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Items</span>
-                <span className="font-semibold text-slate-900">
+                <span className="text-white">Items</span>
+                <span className="font-semibold text-white">
                   {wishlistItems.length}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Total value</span>
-                <span className="font-semibold text-slate-900">
+                <span className="text-white">Total value</span>
+                <span className="font-semibold text-white">
                   ₦{totalValue.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">You save</span>
-                <span className="font-semibold text-emerald-600">
+                <span className="text-white">You save</span>
+                <span className="font-semibold text-white">
                   ₦{savings.toLocaleString()}
                 </span>
               </div>
@@ -271,12 +249,12 @@ const WishlistPage = () => {
               <Button
                 onClick={handleAddAllToCart}
                 disabled={addingAllToCart}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+                className="w-full bg-white text-black hover:bg-academy-accent/90 disabled:opacity-50"
               >
                 {addingAllToCart ? "Adding..." : "Add All to Cart"}
               </Button>
             )}
-          </div>
+          </Card>
         </div>
       </div>
     </div>

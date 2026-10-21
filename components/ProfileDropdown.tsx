@@ -34,7 +34,7 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent className="max-w-xs w-72">
+      <DropdownMenuContent className="max-w-xs w-72 z-1000">
         {/* User Info Header */}
         <DropdownMenuLabel className="flex items-start gap-3 p-4">
           <img
@@ -65,7 +65,7 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
             className="cursor-pointer"
             asChild
           >
-            <Link href="/academy/learning">
+            <Link href="/profile?my-learning">
               <BookOpen
                 size={16}
                 strokeWidth={2}
@@ -79,7 +79,7 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
             className="cursor-pointer"
             asChild
           >
-            <Link href="/academy/wishlist">
+            <Link href="/profile?wishlist">
               <Heart
                 size={16}
                 strokeWidth={2}
@@ -93,7 +93,7 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
             className="cursor-pointer"
             asChild
           >
-            <Link href="/academy/cart">
+            <Link href="/profile?shopping-cart">
               <ShoppingBag
                 size={16}
                 strokeWidth={2}

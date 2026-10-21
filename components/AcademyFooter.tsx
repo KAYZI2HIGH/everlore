@@ -50,18 +50,18 @@ export default function AcademyFooter() {
   };
 
   return (
-    <footer className="bg-white text-slate-900 border-t border-slate-200">
+    <footer className="border-t border-border bg-background text-foreground">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Links Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <div>
-            <h4 className="font-semibold text-slate-900 mb-4">Explore</h4>
+            <h4 className="mb-4 font-semibold text-foreground">Explore</h4>
             <ul className="space-y-2">
               {footerLinks.explore.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-slate-600 hover:text-emerald-600 transition-colors text-sm"
+                    className="text-sm text-muted-foreground transition-colors hover:text-academy-accent"
                   >
                     {link.name}
                   </Link>
@@ -71,13 +71,13 @@ export default function AcademyFooter() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-slate-900 mb-4">Support</h4>
+            <h4 className="mb-4 font-semibold text-foreground">Support</h4>
             <ul className="space-y-2">
               {footerLinks.support.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-slate-600 hover:text-emerald-600 transition-colors text-sm"
+                    className="text-sm text-muted-foreground transition-colors hover:text-academy-accent"
                   >
                     {link.name}
                   </Link>
@@ -87,13 +87,13 @@ export default function AcademyFooter() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-slate-900 mb-4">Company</h4>
+            <h4 className="mb-4 font-semibold text-foreground">Company</h4>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-slate-600 hover:text-emerald-600 transition-colors text-sm"
+                    className="text-sm text-muted-foreground transition-colors hover:text-academy-accent"
                   >
                     {link.name}
                   </Link>
@@ -103,13 +103,13 @@ export default function AcademyFooter() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-slate-900 mb-4">Legal</h4>
+            <h4 className="mb-4 font-semibold text-foreground">Legal</h4>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-slate-600 hover:text-emerald-600 transition-colors text-sm"
+                    className="text-sm text-muted-foreground transition-colors hover:text-academy-accent"
                   >
                     {link.name}
                   </Link>
@@ -120,14 +120,14 @@ export default function AcademyFooter() {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-slate-200 pt-8">
+        <div className="border-t border-border pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             {/* Brand Info */}
             <div>
-              <h2 className="text-xl font-bold text-emerald-600 mb-2">
+              <h2 className="mb-2 text-xl font-bold text-academy-accent">
                 Everlore
               </h2>
-              <p className="text-slate-600 text-sm max-w-xs">
+              <p className="max-w-xs text-sm text-muted-foreground">
                 Empowering learners worldwide with high-quality courses and
                 expert instructors.
               </p>
@@ -143,7 +143,7 @@ export default function AcademyFooter() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-lg bg-slate-100 hover:bg-emerald-600 text-slate-700 hover:text-white flex items-center justify-center transition-colors"
+                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors hover:bg-academy-accent hover:text-academy-accent-foreground"
                     aria-label={social.name}
                   >
                     <Icon className="w-5 h-5" />
@@ -154,7 +154,7 @@ export default function AcademyFooter() {
           </div>
 
           {/* Copyright */}
-          <div className="border-t border-slate-200 mt-8 pt-8 text-center text-slate-500 text-sm">
+          <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
             <p>
               © {new Date().getFullYear()} Everlore. All rights reserved. Made
               with ❤️ for learners.

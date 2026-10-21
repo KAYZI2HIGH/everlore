@@ -3,21 +3,17 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { BreadcrumbUI } from "@/components/BreadcrumbUi";
+import { AcademyBreadcrumbBar } from "@/components/academy/AcademyBreadcrumbBar";
+import { AcademyFilterSelect } from "@/components/academy/AcademyFilterSelect";
 import { CourseCard } from "@/components/CourseCard";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import {
   getAllCourses,
-  searchCourses,
-  getCoursesByCategory,
   getUniqueCategories,
   getCurrentUser,
 } from "@/lib/actions/sanity.actions";
 import { CourseListSkeleton } from "@/components/skeletons/CourseCardSkeleton";
-import { CategoryFilterSkeleton } from "@/components/skeletons/CategoryFilterSkeleton";
 import { useCart } from "@/hooks/useCart";
 
 interface Course {
@@ -36,18 +32,22 @@ interface Course {
   createdAt: string;
 }
 
+type EnrollmentRef = string | { _ref?: string; _id?: string };
+
 const CoursePage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
-  const { addToCart, isAddingToCart, cartItems } = useCart();
+  const { addToCartAsync, cartItems } = useCart();
 
   // Get cart item IDs
-  const cartItemIds = cartItems?.map((item: any) => item._id) || [];
+  const cartItemIds =
+    cartItems?.map((item: { _id: string }) => item._id) || [];
 
   // Fetch categories, courses, and user enrollment data on mount
   useEffect(() => {
@@ -65,9 +65,17 @@ const CoursePage = () => {
 
         // Get enrolled course IDs
         if (userData?.enrolledCourses) {
-          const enrolled = userData.enrolledCourses.map(
-            (course: any) => course._ref || course._id,
-          );
+          const enrolled = userData.enrolledCourses
+            .map((course: EnrollmentRef) =>
+              typeof course === "object" && course !== null
+                ? "_ref" in course
+                  ? String(course._ref)
+                  : "_id" in course
+                    ? String(course._id)
+                    : ""
+                : String(course),
+            )
+            .filter(Boolean);
           setEnrolledCourseIds(enrolled);
         }
       } catch (error) {
@@ -79,7 +87,7 @@ const CoursePage = () => {
     fetchData();
   }, []);
 
-  // Filter courses based on categories, search, and enrollment status
+  // Filter courses based on categories and enrollment status
   useEffect(() => {
     let filtered = courses;
 
@@ -88,214 +96,129 @@ const CoursePage = () => {
       (course) => !enrolledCourseIds.includes(course._id),
     );
 
-    // Filter by categories
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter((course) =>
-        selectedCategories.includes(course.category),
-      );
+    if (selectedCategory) {
+      filtered = filtered.filter((course) => course.category === selectedCategory);
     }
 
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (course) =>
-          course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          course.instructor.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
+    if (selectedLevel) {
+      filtered = filtered.filter((course) => course.level === selectedLevel);
+    }
+
+    if (selectedDuration) {
+      filtered = filtered.filter((course) => {
+        if (selectedDuration === "short") return course.duration <= 4;
+        if (selectedDuration === "medium") {
+          return course.duration > 4 && course.duration <= 12;
+        }
+        return course.duration > 12;
+      });
     }
 
     setFilteredCourses(filtered);
-  }, [selectedCategories, searchTerm, courses, enrolledCourseIds]);
-
-  const toggleCategory = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category) ?
-        prev.filter((c) => c !== category)
-      : [...prev, category],
-    );
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Filter is already done by useEffect
-  };
+  }, [
+    selectedCategory,
+    selectedLevel,
+    selectedDuration,
+    courses,
+    enrolledCourseIds,
+  ]);
 
   const handleClearFilters = () => {
-    setSelectedCategories([]);
-    setSearchTerm("");
+    setSelectedCategory("");
+    setSelectedLevel("");
+    setSelectedDuration("");
     setFilteredCourses(courses);
   };
 
   const handleAddToCart = async (courseId: string) => {
     try {
-      await new Promise((resolve) => {
-        addToCart(courseId, {
-          onSuccess: () => {
-            toast.success("Course added to cart!");
-            resolve(null);
-          },
-          onError: (error: any) => {
-            toast.error(error?.message || "Failed to add course to cart");
-            resolve(null);
-          },
-        });
-      });
+      await addToCartAsync(courseId);
+      toast.success("Course added to cart!");
     } catch (error) {
       console.error("Error adding to cart:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add course to cart",
+      );
     }
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 border-b border-slate-200">
-        <BreadcrumbUI
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Courses", href: "/academy/courses" },
-          ]}
-        />
-      </div>
-
-      {/* Header Section */}
-      <div className="px-6 md:px-20 py-12 border-b border-slate-200">
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold text-slate-900">
-            Browse Our Courses
-          </h1>
-          <p className="text-slate-600 text-base max-w-2xl">
-            Explore our comprehensive course catalog to find the perfect course
-            that suits your goals and career aspirations.
-          </p>
-        </div>
-      </div>
-
+      <AcademyBreadcrumbBar
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Courses", href: "/academy/courses" },
+        ]}
+      />
       {/* Filters Section */}
-      <div className="px-6 md:px-20 py-8 border-b border-slate-200">
-        <div className="space-y-6">
-          {/* Category Filter */}
-          {isLoading ?
-            <CategoryFilterSkeleton />
-          : <div className="space-y-4">
-              <h2 className="text-sm font-semibold text-slate-900">
-                Filter by Category
-              </h2>
-              <div className="flex flex-wrap gap-3">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => toggleCategory(category)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all border-2 ${
-                      selectedCategories.includes(category) ?
-                        "border-emerald-600 bg-emerald-50 text-emerald-700"
-                      : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>{category}</span>
-                      {selectedCategories.includes(category) && (
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          }
-
-          {/* Search Section */}
-          <form
-            onSubmit={handleSearch}
-            className="space-y-4"
-          >
-            <h2 className="text-sm font-semibold text-slate-900">
-              Search Courses
-            </h2>
-            <div className="flex flex-col md:flex-row gap-3 max-w-2xl">
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <Input
-                  type="text"
-                  placeholder="Enter keyword to search"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 py-3 bg-white border-2 border-slate-300 focus:border-emerald-600 focus:ring-0"
-                />
-              </div>
-              <Button
-                type="submit"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8"
-              >
-                Search
-              </Button>
-            </div>
-          </form>
-
-          {/* Active Filters Display */}
-          {(selectedCategories.length > 0 || searchTerm) && (
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <span className="text-sm font-medium text-slate-600">
-                Active filters:
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {selectedCategories.map((category) => (
-                  <Badge
-                    key={category}
-                    variant="secondary"
-                    className="flex items-center gap-2 px-3 py-1"
-                  >
-                    {category}
-                    <button
-                      onClick={() => toggleCategory(category)}
-                      className="ml-1 hover:text-red-500"
-                    >
-                      ✕
-                    </button>
-                  </Badge>
-                ))}
-                {searchTerm && (
-                  <Badge
-                    variant="secondary"
-                    className="px-3 py-1"
-                  >
-                    Search: "{searchTerm}"
-                    <button
-                      onClick={() => setSearchTerm("")}
-                      className="ml-1 hover:text-red-500"
-                    >
-                      ✕
-                    </button>
-                  </Badge>
-                )}
-              </div>
-            </div>
-          )}
+      <div className="max-w-6xl mx-auto pt-2">
+        <div className="grid gap-6 md:grid-cols-2 p-6 lg:grid-cols-4">
+          <AcademyFilterSelect
+            id="course-category"
+            label="Course category"
+            placeholder="All categories"
+            value={selectedCategory}
+            onValueChange={setSelectedCategory}
+            options={(categories.length > 0 ?
+              categories
+            : ["Design", "Development", "Business", "Marketing"]
+            ).map((category) => ({ label: category, value: category }))}
+          />
+          <AcademyFilterSelect
+            id="course-level"
+            label="Course level"
+            placeholder="All levels"
+            value={selectedLevel}
+            onValueChange={setSelectedLevel}
+            options={[
+              { label: "Beginner", value: "Beginner" },
+              { label: "Intermediate", value: "Intermediate" },
+              { label: "Advanced", value: "Advanced" },
+            ]}
+          />
+          <AcademyFilterSelect
+            id="course-duration"
+            label="Course duration"
+            placeholder="Any duration"
+            value={selectedDuration}
+            onValueChange={setSelectedDuration}
+            options={[
+              { label: "Up to 4 hours", value: "short" },
+              { label: "5–12 hours", value: "medium" },
+              { label: "More than 12 hours", value: "long" },
+            ]}
+          />
+          <div className="flex items-end">
+            <Button
+              variant="outline"
+              onClick={handleClearFilters}
+              className="w-full rounded-3xl bg-brand text-white hover:bg-brand/90 hover:text-white"
+            >
+              Reset Filter
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Courses Grid */}
-      <div className="px-6 md:px-20 py-12">
+      <div className="min-h-[calc(100vh-20rem)] px-4 pb-12 max-w-6xl mx-auto">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-8">
-            {isLoading ?
-              "Loading courses..."
-            : `Available Courses (${filteredCourses.length})`}
-          </h2>
+          <div className="mb-4 flex items-end justify-between gap-4">
+            {(selectedCategory || selectedLevel || selectedDuration) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearFilters}
+              >
+                Reset filters
+              </Button>
+            )}
+          </div>
           {isLoading ?
             <CourseListSkeleton />
           : filteredCourses.length > 0 ?
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid gap-x-6 gap-y-8 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
               {filteredCourses.map((course) => {
                 const isInCart = cartItemIds.includes(course._id);
                 return (
@@ -322,7 +245,7 @@ const CoursePage = () => {
                 );
               })}
             </div>
-          : <div className="flex flex-col items-center justify-center py-12 gap-6">
+          : <Card className="flex flex-col items-center justify-center gap-6 border-border py-12 shadow-none">
               <div className="relative w-64 h-44">
                 <Image
                   src="/empty-courses.svg"
@@ -333,10 +256,10 @@ const CoursePage = () => {
                 />
               </div>
               <div className="text-center space-y-2">
-                <p className="text-slate-900 text-lg font-semibold">
+                <p className="text-lg font-semibold text-foreground">
                   No courses match your filters
                 </p>
-                <p className="text-slate-600 text-sm max-w-md">
+                <p className="max-w-md text-sm text-muted-foreground">
                   Try clearing your filters or search to explore all available
                   courses.
                 </p>
@@ -345,13 +268,12 @@ const CoursePage = () => {
                 <Button
                   variant="outline"
                   onClick={handleClearFilters}
-                  className="border-slate-300"
+                  className="border-input"
                 >
                   Clear filters
                 </Button>
-                <Button onClick={() => setSearchTerm("")}>Reset search</Button>
               </div>
-            </div>
+            </Card>
           }
         </div>
       </div>

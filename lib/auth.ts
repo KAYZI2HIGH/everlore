@@ -68,6 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             googleId: account.providerAccountId,
             enrolledCourses: [],
             wishlist: [],
+            cart: [],
             createdAt: new Date().toISOString(),
           });
         }
@@ -77,15 +78,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.email = user.email;
+        token.id = user.id ?? token.sub;
+        token.email = user.email ?? token.email;
       }
+
+      if (!token.id) {
+        token.id = token.sub;
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        session.user.email = token.email as string;
+        session.user.id = (token.id ?? token.sub) as string;
+        session.user.email = (token.email ?? session.user.email) as string;
       }
       return session;
     },

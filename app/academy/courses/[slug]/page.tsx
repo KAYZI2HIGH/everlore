@@ -1,31 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import { AcademyBreadcrumbBar } from "@/components/academy/AcademyBreadcrumbBar";
+import { BreadcrumbUI } from "@/components/BreadcrumbUi";
+import { CourseDetailsSkeleton } from "@/components/skeletons/CourseDetailsSkeleton";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/hooks/useCart";
+import { usePaystack } from "@/hooks/usePaystack";
+import { useWishlist } from "@/hooks/useWishlist";
+import { getCourseBySlug, getCurrentUser } from "@/lib/actions/sanity.actions";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Award,
+  CheckCircle,
+  ChevronDown,
+  Clock,
+  Heart,
+  Play,
+  Star,
+  Users,
+  Zap
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BreadcrumbUI } from "@/components/BreadcrumbUi";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Star,
-  Users,
-  Clock,
-  Zap,
-  CheckCircle,
-  Play,
-  MessageSquare,
-  ThumbsUp,
-  ChevronDown,
-  Award,
-  Heart,
-} from "lucide-react";
-import { getCourseBySlug, getCurrentUser } from "@/lib/actions/sanity.actions";
-import { CourseDetailsSkeleton } from "@/components/skeletons/CourseDetailsSkeleton";
-import { useCart } from "@/hooks/useCart";
-import { useWishlist } from "@/hooks/useWishlist";
-import { usePaystack } from "@/hooks/usePaystack";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface Course {
@@ -192,18 +190,16 @@ const CourseDetailsPage = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 border-b border-slate-200">
-        <BreadcrumbUI
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Academy", href: "/academy/courses" },
-            { label: course.title, href: "#" },
-          ]}
-        />
-      </div>
+      <AcademyBreadcrumbBar
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Academy", href: "/academy/courses" },
+          { label: course.title, href: "#" },
+        ]}
+      />
 
       {/* Hero Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-6 md:px-20 py-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-6 py-12 max-w-6xl mx-auto pt-4">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8">
           {/* Course Image */}

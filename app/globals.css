@@ -49,6 +49,8 @@
   --animate-scale-in: scale-in 0.5s ease-out forwards;
   --color-brand-foreground: var(--brand-foreground);
   --color-brand: var(--brand);
+  --color-academy-accent: var(--academy-accent);
+  --color-academy-accent-foreground: var(--academy-accent-foreground);
   @keyframes fade-in-up {
     0% {
       opacity: 0;
@@ -137,6 +139,8 @@
   --sidebar-ring: oklch(0.708 0 0);
   --brand: #2776b2;
   --brand-foreground: #dcecf8;
+  --academy-accent: #5e8b20;
+  --academy-accent-foreground: #ffffff;
 }
 
 .dark {
@@ -173,6 +177,8 @@
   --sidebar-ring: oklch(0.556 0 0);
   --brand: #8dc63f;
   --brand-foreground: #eff8df;
+  --academy-accent: #8dc63f;
+  --academy-accent-foreground: #102235;
 }
 
 @layer base {
