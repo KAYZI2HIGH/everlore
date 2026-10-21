@@ -174,10 +174,10 @@ const HeroSection = () => {
             Get 50% Discount on first purchases
           </div>
 
-          <h1 className="text-3xl md:text-5xl text-balance tracking-wider leading-snug font-semibold text-center">
+          <h1 className="text-3xl md:text-5xl text-pretty tracking-wider leading-snug font-semibold text-center">
             Empowering Growth Through Knowledge & Digital Innovation
           </h1>
-          <p className="text-base md:text-lg text-balance tracking-wide text-center">
+          <p className="text-base md:text-lg text-pretty tracking-wide text-center">
             Everlore is a knowledge-driven digital platform designed to help you
             build practical skills, deploy real-world strategies, and create
             sustainable income in the digital economy.

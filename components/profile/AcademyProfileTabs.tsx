@@ -36,12 +36,12 @@ export function AcademyProfileTabs() {
       onValueChange={handleTabChange}
       className="w-full"
     >
-      <TabsList className="mb-3 h-10! w-full items-start justify-start gap-2 overflow-hidden rounded-none border-b border-border bg-transparent p-0 text-foreground">
+      <TabsList className="mb-3 h-auto min-h-10! w-full min-w-0 justify-start gap-4 overflow-x-auto overflow-y-hidden rounded-none border-b border-border bg-transparent p-0 text-foreground">
         {tabItems.map(({ value, label, icon: Icon }) => (
           <TabsTrigger
             key={value}
             value={value}
-            className="relative flex-0! w-fit! shrink-0 rounded-none px-8 py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:border-b-3 data-[state=active]:border-b-brand data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none!"
+            className="relative shrink-0! whitespace-nowrap rounded-none px-4 py-2 text-center text-xs sm:px-6 sm:text-sm after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:border-b-3 data-[state=active]:border-b-brand data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none!"
           >
             <Icon
               className="mr-2 size-4 opacity-70"
@@ -52,13 +52,13 @@ export function AcademyProfileTabs() {
         ))}
       </TabsList>
 
-      <TabsContent value="my-learning" className="mt-6">
+      <TabsContent value="my-learning" className="mt-4">
         <MyLearningPage />
       </TabsContent>
-      <TabsContent value="wishlist" className="mt-6">
+      <TabsContent value="wishlist" className="mt-4">
         <WishlistPage />
       </TabsContent>
-      <TabsContent value="shopping-cart" className="mt-6">
+      <TabsContent value="shopping-cart" className="mt-4">
         <CartPage />
       </TabsContent>
     </Tabs>

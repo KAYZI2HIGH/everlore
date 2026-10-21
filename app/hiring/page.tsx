@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
 import { MinimalFooter } from "@/components/minimal-footer";
 import { getAllJobPostings } from "@/lib/actions/sanity.actions";
+import { contentQueryKeys } from "@/lib/query-keys";
 
 interface JobPosting {
   _id: string;
@@ -24,8 +25,9 @@ interface JobPosting {
 
 export default function HiringPage() {
   const { data: jobs = [], isLoading } = useQuery({
-    queryKey: ["jobs"],
-    queryFn: () => getAllJobPostings(),
+    queryKey: contentQueryKeys.jobs.list(),
+    queryFn: getAllJobPostings,
+    staleTime: 10 * 60 * 1000,
   });
 
   const formatDate = (dateString: string) => {
@@ -52,7 +54,7 @@ export default function HiringPage() {
 
   if (isLoading) {
     return (
-      <>
+      <div className="pt-24">
         <Header />
         <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
@@ -60,12 +62,12 @@ export default function HiringPage() {
           </div>
         </div>
         <MinimalFooter />
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="pt-24">
       <Header />
       <section className="py-18 px-4! relative">
         <div className="container flex flex-col items-center gap-10">
@@ -179,6 +181,6 @@ export default function HiringPage() {
         </div>
       </section>
       <MinimalFooter />
-    </>
+    </div>
   );
 }

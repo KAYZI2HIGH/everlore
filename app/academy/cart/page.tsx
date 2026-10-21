@@ -127,7 +127,7 @@ const CartPage = () => {
 
       {/* Cart Content */}
       <div>
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
+        <div className="grid grid-cols-1 gap-6 px-1 sm:gap-8 sm:px-6 lg:grid-cols-6">
           {/* Cart Items */}
           <div className="lg:col-span-4 space-y-6">
             {isLoading ?
@@ -164,11 +164,11 @@ const CartPage = () => {
             : cartItems.map((item: CartItem) => (
                 <div
                   key={item._id}
-                  className="rounded-lg border border-border bg-card p-6 transition-colors hover:border-academy-accent/50"
+                  className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-academy-accent/50 sm:p-6"
                 >
-                  <div className="flex gap-4">
+                  <div className="flex flex-col gap-4 sm:flex-row">
                     {/* Thumbnail */}
-                    <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-lg bg-muted">
+                    <div className="relative h-40 w-full shrink-0 overflow-hidden rounded-lg bg-muted sm:h-24 sm:w-32">
                       <Image
                         src={item.image || "/academy.avif"}
                         alt={item.title}
@@ -211,7 +211,7 @@ const CartPage = () => {
                       </div>
 
                       {/* Price & Actions */}
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between sm:pt-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-muted-foreground line-through">
                             ₦{(item.price * 1.5).toLocaleString()}
@@ -221,7 +221,7 @@ const CartPage = () => {
                           </span>
                         </div>
 
-                        <div className="flex gap-4 text-sm">
+                        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
                           <button
                             onClick={() => handleRemoveFromCart(item._id)}
                             disabled={removingFromCart === item._id}
@@ -259,7 +259,7 @@ const CartPage = () => {
 
           {/* Summary */}
           <div className="lg:col-span-2">
-            <Card className="sticky top-24 border-border bg-brand p-6 shadow-none">
+            <Card className="border-border bg-brand p-4 shadow-none sm:p-6 lg:sticky lg:top-24">
               <h2 className="mb-6 font-semibold text-white">Total</h2>
 
               <div className="mb-2 space-y-4 border-b border-border pb-6">

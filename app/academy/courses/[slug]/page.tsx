@@ -200,9 +200,9 @@ const CourseDetailsPage = () => {
       />
 
       {/* Hero Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-6 py-12 max-w-6xl mx-auto pt-4">
+      <div className="grid grid-cols-1 gap-6 px-4 py-8 mx-auto max-w-6xl pt-4 lg:grid-cols-3 lg:gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-6 lg:col-span-2 lg:space-y-8">
           {/* Course Image */}
           <div className="relative w-full h-96 rounded-lg overflow-hidden bg-slate-200">
             {isPurchased && course.videoUrl ?
@@ -239,34 +239,34 @@ const CourseDetailsPage = () => {
 
           {/* Course Title & Meta */}
           <div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-4">
+            <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">
               {course.title}
             </h1>
-            <div className="flex flex-wrap gap-4 mb-4">
-              <div className="flex items-center gap-2">
-                <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+            <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+              <div className="flex items-center gap-1.5">
+                <Star className="size-4 fill-yellow-400 text-yellow-400" />
                 <span className="font-semibold text-slate-900">
                   {course.rating}
                 </span>
                 <span className="text-slate-600">(342 reviews)</span>
               </div>
-              <div className="flex items-center gap-2 text-slate-600">
-                <Users className="w-5 h-5" />
+              <div className="flex items-center gap-1.5 text-slate-600">
+                <Users className="size-4" />
                 <span>{course.students?.toLocaleString() || "0"} students</span>
               </div>
-              <div className="flex items-center gap-2 text-slate-600">
-                <Clock className="w-5 h-5" />
+              <div className="flex items-center gap-1.5 text-slate-600">
+                <Clock className="size-4" />
                 <span>{course.duration} hours</span>
               </div>
             </div>
 
             {/* Instructor */}
-            <div className="flex items-center gap-4 pb-6 border-b border-slate-200">
+            <div className="flex items-center gap-3 border-b border-slate-200 pb-5">
               <Image
                 src="https://api.dicebear.com/7.x/avataaars/svg?seed=Instructor"
                 alt={course.instructor}
-                width={48}
-                height={48}
+                width={40}
+                height={40}
                 className="rounded-full"
               />
               <div>
@@ -280,13 +280,13 @@ const CourseDetailsPage = () => {
 
           {/* Description */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            <h2 className="mb-3 text-xl font-semibold tracking-tight text-slate-900">
               About this course
             </h2>
-            <p className="text-slate-600 leading-relaxed mb-4">
+            <p className="mb-3 text-sm leading-7 text-slate-600">
               {course.description}
             </p>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-sm leading-7 text-slate-600">
               Learn practical skills and gain hands-on experience with
               real-world projects. This comprehensive course covers everything
               you need to master this subject.
@@ -295,7 +295,7 @@ const CourseDetailsPage = () => {
 
           {/* What You'll Learn */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            <h2 className="mb-4 text-xl font-semibold tracking-tight text-slate-900">
               What you'll learn
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -305,18 +305,18 @@ const CourseDetailsPage = () => {
                   className="flex gap-3"
                 >
                   <CheckCircle className="w-5 h-5 text-brand shrink-0 mt-1" />
-                  <span className="text-slate-700">{point}</span>
+                  <span className="text-sm leading-6 text-slate-700">{point}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Course Highlights */}
-          <div className="bg-slate-50 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-6">
+          <div className="rounded-lg bg-slate-50 p-5">
+            <h2 className="mb-4 text-lg font-semibold tracking-tight text-slate-900">
               Course highlights
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {highlights.map((highlight: any, idx: number) => {
                 const Icons = [Clock, Play, Zap, Award];
                 const Icon = Icons[idx] || Zap;
@@ -327,9 +327,9 @@ const CourseDetailsPage = () => {
                     key={idx}
                     className="flex gap-3"
                   >
-                    <Icon className="w-6 h-6 text-brand shrink-0" />
+                    <Icon className="size-5 shrink-0 text-brand" />
                     <div>
-                      <p className="font-semibold text-slate-900">{text}</p>
+                      <p className="text-sm font-semibold text-slate-900">{text}</p>
                     </div>
                   </div>
                 );
@@ -339,7 +339,7 @@ const CourseDetailsPage = () => {
 
           {/* Course Curriculum */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            <h2 className="mb-4 text-xl font-semibold tracking-tight text-slate-900">
               Course curriculum
             </h2>
             <div className="space-y-2">
@@ -366,7 +366,7 @@ const CourseDetailsPage = () => {
 
           {/* FAQs */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            <h2 className="mb-4 text-xl font-semibold tracking-tight text-slate-900">
               Frequently asked questions
             </h2>
             <div className="space-y-2">
@@ -381,7 +381,7 @@ const CourseDetailsPage = () => {
                         expandedFAQ === faq.id ? null : faq.id || null,
                       )
                     }
-                    className="w-full px-4 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                    className="flex w-full items-center justify-between px-4 py-3 text-sm hover:bg-slate-50 transition-colors"
                   >
                     <span className="font-semibold text-slate-900 text-left">
                       {faq.question}
@@ -404,7 +404,7 @@ const CourseDetailsPage = () => {
 
           {/* Reviews */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            <h2 className="mb-4 text-xl font-semibold tracking-tight text-slate-900">
               Student reviews
             </h2>
             <div className="space-y-4">
@@ -448,13 +448,13 @@ const CourseDetailsPage = () => {
 
         {/* Sidebar - Course Card */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 bg-brand border border-slate-200 rounded-lg p-6">
+          <div className="sticky top-24 rounded-lg border border-slate-200 bg-brand p-5">
             {!isPurchased ?
               <>
                 {/* Price */}
                 <div className="mb-6">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-white">
+                    <span className="text-3xl font-semibold text-white">
                       ₦{course.price?.toLocaleString() || "0"}
                     </span>
                   </div>

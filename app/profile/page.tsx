@@ -28,7 +28,7 @@ const ProfilePage = async () => {
     .toUpperCase();
 
   return (
-    <main className="mx-auto min-h-[calc(100vh-5rem)] max-w-6xl px-4 py-30 md:px-6 lg:px-8">
+    <main className="mx-auto min-h-[calc(100vh-5rem)] max-w-6xl px-4 py-25 md:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <section className="flex flex-col gap-6 pb-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">

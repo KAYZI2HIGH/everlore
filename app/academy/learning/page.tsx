@@ -70,7 +70,7 @@ const MyLearningPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Course Grid */}
-      <div className="mx-auto max-w-6xl px-4">
+      <div className="mx-auto max-w-6xl">
         {isLoading ?
           <Card className="border-border p-12 text-center shadow-none">
             <Skeleton className="mx-auto h-5 w-48" />
@@ -89,7 +89,7 @@ const MyLearningPage = () => {
               </Button>
             </Link>
           </Card>
-        : <div className="grid gap-x-4 gap-y-8 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
+        : <div className="grid gap-x-4 gap-y-8 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
             {filteredCourses.map((course: EnrolledCourse) => (
               <LearningCourseCard
                 key={course._id}

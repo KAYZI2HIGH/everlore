@@ -9,6 +9,16 @@ import { CourseCard } from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   getAllCourses,
   getUniqueCategories,
   getCurrentUser,
@@ -17,6 +27,7 @@ import { CourseListSkeleton } from "@/components/skeletons/CourseCardSkeleton";
 import { useCart } from "@/hooks/useCart";
 import { useQuery } from "@tanstack/react-query";
 import { academyQueryKeys, userQueryKeys } from "@/lib/query-keys";
+import { SlidersHorizontal } from "lucide-react";
 
 interface Course {
   _id: string;
@@ -109,6 +120,46 @@ const CoursePage = () => {
 
   const isLoading = coursesLoading || categoriesLoading;
 
+  const renderFilterControls = (idSuffix: string) => (
+    <>
+      <AcademyFilterSelect
+        id={`course-category-${idSuffix}`}
+        label="Course category"
+        placeholder="All categories"
+        value={selectedCategory}
+        onValueChange={setSelectedCategory}
+        options={(categories.length > 0 ?
+          categories
+        : ["Design", "Development", "Business", "Marketing"]
+        ).map((category: string) => ({ label: category, value: category }))}
+      />
+      <AcademyFilterSelect
+        id={`course-level-${idSuffix}`}
+        label="Course level"
+        placeholder="All levels"
+        value={selectedLevel}
+        onValueChange={setSelectedLevel}
+        options={[
+          { label: "Beginner", value: "Beginner" },
+          { label: "Intermediate", value: "Intermediate" },
+          { label: "Advanced", value: "Advanced" },
+        ]}
+      />
+      <AcademyFilterSelect
+        id={`course-duration-${idSuffix}`}
+        label="Course duration"
+        placeholder="Any duration"
+        value={selectedDuration}
+        onValueChange={setSelectedDuration}
+        options={[
+          { label: "Up to 4 hours", value: "short" },
+          { label: "5–12 hours", value: "medium" },
+          { label: "More than 12 hours", value: "long" },
+        ]}
+      />
+    </>
+  );
+
   const handleAddToCart = async (courseId: string) => {
     try {
       await addToCartAsync(courseId);
@@ -132,53 +183,61 @@ const CoursePage = () => {
       />
       {/* Filters Section */}
       <div className="max-w-6xl mx-auto pt-2">
-        <div className="grid gap-6 md:grid-cols-2 p-6 lg:grid-cols-4">
-          <AcademyFilterSelect
-            id="course-category"
-            label="Course category"
-            placeholder="All categories"
-            value={selectedCategory}
-            onValueChange={setSelectedCategory}
-            options={(categories.length > 0 ?
-              categories
-            : ["Design", "Development", "Business", "Marketing"]
-            ).map((category: string) => ({ label: category, value: category }))}
-          />
-          <AcademyFilterSelect
-            id="course-level"
-            label="Course level"
-            placeholder="All levels"
-            value={selectedLevel}
-            onValueChange={setSelectedLevel}
-            options={[
-              { label: "Beginner", value: "Beginner" },
-              { label: "Intermediate", value: "Intermediate" },
-              { label: "Advanced", value: "Advanced" },
-            ]}
-          />
-          <AcademyFilterSelect
-            id="course-duration"
-            label="Course duration"
-            placeholder="Any duration"
-            value={selectedDuration}
-            onValueChange={setSelectedDuration}
-            options={[
-              { label: "Up to 4 hours", value: "short" },
-              { label: "5–12 hours", value: "medium" },
-              { label: "More than 12 hours", value: "long" },
-            ]}
-          />
-          <div className="flex items-end">
-            <Button
-              variant="outline"
-              onClick={handleClearFilters}
-              className="w-full rounded-3xl bg-brand text-white hover:bg-brand/90 hover:text-white"
-            >
-              Reset Filter
-            </Button>
+          <div className="hidden gap-6 p-6 md:grid md:grid-cols-2 lg:grid-cols-4">
+            {renderFilterControls("desktop")}
+            <div className="flex items-end">
+              <Button
+                variant="outline"
+                onClick={handleClearFilters}
+                className="w-full rounded-3xl bg-brand text-white hover:bg-brand/90 hover:text-white"
+              >
+                Reset Filter
+              </Button>
+            </div>
+          </div>
+          <div className="px-4 md:hidden">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-center gap-2 rounded-lg"
+                >
+                  <SlidersHorizontal className="size-4" />
+                  Filters
+                  {(selectedCategory || selectedLevel || selectedDuration) && (
+                    <span className="text-xs text-muted-foreground">
+                      (active)
+                    </span>
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-h-[90vh] overflow-y-auto z-10000">
+                <DialogHeader>
+                  <DialogTitle>Filter courses</DialogTitle>
+                  <DialogDescription>
+                    Choose a category, level, or duration to narrow the course
+                    list.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-5 py-2">
+                  {renderFilterControls("mobile")}
+                </div>
+                <DialogFooter className="gap-2 sm:gap-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleClearFilters}
+                  >
+                    Reset filters
+                  </Button>
+                  <DialogClose asChild>
+                    <Button type="button">Show courses</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
-      </div>
 
       {/* Courses Grid */}
       <div className="min-h-[calc(100vh-20rem)] px-4 pb-12 max-w-6xl mx-auto">

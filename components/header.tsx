@@ -23,7 +23,7 @@ export function Header({maxwidth}: {maxwidth?: boolean}) {
     },
     {
       label: "Read Our Blogs",
-      href: "/blogs",
+      href: "/blog",
     },
     {
       label: "Career Opportunities",
@@ -35,14 +35,19 @@ export function Header({maxwidth}: {maxwidth?: boolean}) {
     e: React.MouseEvent<HTMLAnchorElement>,
     href: string,
   ) => {
+    if (!href.startsWith("#")) {
+      setOpen(false);
+      return;
+    }
+
     e.preventDefault();
-    const targetId = href.replace("#", "");
+    const targetId = href.slice(1);
     const element = document.getElementById(targetId);
 
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
-      setOpen(false); // Close mobile menu if open
     }
+    setOpen(false);
   };
 
   React.useEffect(() => {
@@ -59,26 +64,26 @@ export function Header({maxwidth}: {maxwidth?: boolean}) {
   return (
     <header
       className={
-        "fixed top-0 z-1000 w-full border-b border-border bg-background/95 backdrop-blur-lg supports-backdrop-filter:bg-background/50"
+        "fixed top-0 z-100 w-full border-b border-border bg-background/95 backdrop-blur-lg supports-backdrop-filter:bg-background/50"
       }
     >
       <nav
         className={cn(
-          "mx-auto flex h-14 w-full items-center justify-between p-8 max-md:px-5",
+          "relative mx-auto flex h-14 w-full items-center justify-between p-8 max-md:px-2!",
           maxwidth ? "max-w-6xl" : "max-w-full",)}
       >
         <Link
           href="/"
-          className="w-full"
+          className="w-full max-md:absolute max-md:left-1/2 max-md:w-auto max-md:-translate-x-1/2"
           aria-label="Everlore home"
         >
-          <Logo className="-ml-16" />
+          <Logo className="-ml-16 max-md:ml-0 max-md:h-28" />
         </Link>
         <div className="hidden items-center gap-2 md:flex">
           {links.map((link) => (
             <a
               key={link.label}
-              className={buttonVariants({ variant: "ghost" })}
+              className={buttonVariants({ variant: "link", className: "text-black! hover:text-brand!" })}
               href={link.href}
             >
               {link.label}
@@ -117,7 +122,7 @@ export function Header({maxwidth}: {maxwidth?: boolean}) {
           size="icon"
           variant="outline"
           onClick={() => setOpen(!open)}
-          className="md:hidden"
+          className=" md:hidden"
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label="Toggle menu"
@@ -128,6 +133,22 @@ export function Header({maxwidth}: {maxwidth?: boolean}) {
             duration={300}
           />
         </Button>
+        {session?.user && (
+          <div className="md:hidden">
+            <ProfileDropdown>
+              <img
+                src={
+                  session.user.image ||
+                  "https://api.dicebear.com/7.x/avataaars/svg?seed=User"
+                }
+                alt="Open profile menu"
+                width={36}
+                height={36}
+                className="shrink-0 rounded-full border-2 border-emerald-400"
+              />
+            </ProfileDropdown>
+          </div>
+        )}
       </nav>
       <MobileMenu
         open={open}
@@ -148,21 +169,23 @@ export function Header({maxwidth}: {maxwidth?: boolean}) {
             </a>
           ))}
         </div>
-        <div className="flex flex-col gap-2">
-          <Button
-            variant="outline"
-            className="w-full bg-transparent"
-            asChild
-          >
-            <Link href="/sign-in">Sign In</Link>
-          </Button>
-          <Button
-            className="w-full"
-            asChild
-          >
-            <Link href="/sign-up">Get Started</Link>
-          </Button>
-        </div>
+        {!session?.user && (
+          <div className="flex flex-col gap-2">
+            <Button
+              variant="outline"
+              className="w-full bg-transparent"
+              asChild
+            >
+              <Link href="/sign-in">Sign In</Link>
+            </Button>
+            <Button
+              className="w-full"
+              asChild
+            >
+              <Link href="/sign-up">Get Started</Link>
+            </Button>
+          </div>
+        )}
       </MobileMenu>
     </header>
   );

@@ -10,7 +10,7 @@ export function AcademyBreadcrumbBar({
   return (
     <div className="border-b border-border">
       <BreadcrumbUI
-        className="mx-auto max-w-6xl px-6 py-4"
+        className="mx-auto max-w-6xl px-4 md:px-6 py-4"
         items={items}
       />
     </div>

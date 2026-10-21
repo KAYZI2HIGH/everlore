@@ -9,6 +9,7 @@ import { getAllBlogPosts } from "@/lib/actions/sanity.actions";
 import imageUrlBuilder from "@sanity/image-url";
 import { Header } from "@/components/header";
 import { MinimalFooter } from "@/components/minimal-footer";
+import { contentQueryKeys } from "@/lib/query-keys";
 
 interface BlogPost {
   _id: string;
@@ -29,8 +30,9 @@ interface BlogPost {
 
 export default function BlogPage() {
   const { data: posts = [], isLoading } = useQuery({
-    queryKey: ["blog-posts"],
-    queryFn: () => getAllBlogPosts(),
+    queryKey: contentQueryKeys.blog.list(),
+    queryFn: getAllBlogPosts,
+    staleTime: 10 * 60 * 1000,
   });
 
   const builder = imageUrlBuilder({

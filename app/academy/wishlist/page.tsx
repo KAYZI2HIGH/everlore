@@ -117,7 +117,7 @@ const WishlistPage = () => {
   return (
     <div className="min-h-screen bg-background">
 
-      <div className="grid grid-cols-1 lg:grid-cols-6 gap-8 px-6">
+      <div className="grid grid-cols-1 gap-6 px-1 sm:gap-8 sm:px-6 lg:grid-cols-6">
         {/* Main Content */}
         <div className="lg:col-span-4">
 
@@ -145,12 +145,12 @@ const WishlistPage = () => {
                   key={item._id}
                   className="rounded-lg border border-border p-4 transition-colors hover:border-academy-accent/50"
                 >
-                  <div className="flex gap-4">
+                  <div className="flex flex-col gap-4 sm:flex-row">
                     {/* Thumbnail */}
                     <Link
                       href={`/academy/courses/${item.slug?.current || item._id}`}
                     >
-                      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded bg-muted transition-opacity hover:opacity-80">
+                      <div className="relative h-40 w-full shrink-0 overflow-hidden rounded bg-muted transition-opacity hover:opacity-80 sm:h-24 sm:w-24">
                         <Image
                           src={item.image || "/academy.avif"}
                           alt={item.title}
@@ -183,9 +183,9 @@ const WishlistPage = () => {
                     </div>
 
                     {/* Price & Actions */}
-                    <div className="flex flex-col items-end justify-between gap-2">
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-foreground">
+                    <div className="flex items-center justify-between gap-3 border-t border-border pt-3 sm:flex-col sm:items-end sm:justify-between sm:border-t-0 sm:pt-0">
+                      <div className="text-left sm:text-right">
+                        <p className="text-lg font-bold text-foreground sm:text-xl">
                           ₦{item.price.toLocaleString()}
                         </p>
                       </div>

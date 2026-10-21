@@ -8,6 +8,7 @@ import { getBlogPostBySlug } from "@/lib/actions/sanity.actions";
 import imageUrlBuilder from "@sanity/image-url";
 import { PortableText } from "@portabletext/react";
 import { use } from "react";
+import { contentQueryKeys } from "@/lib/query-keys";
 
 interface BlogPost {
   _id: string;
@@ -142,8 +143,9 @@ function BlogDetailContent({ slug }: { slug: string }) {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["blog-post", slug],
+    queryKey: contentQueryKeys.blog.detail(slug),
     queryFn: () => getBlogPostBySlug(slug),
+    staleTime: 10 * 60 * 1000,
   });
 
   // Debug logging

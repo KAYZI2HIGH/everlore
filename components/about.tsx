@@ -27,7 +27,7 @@ const AboutSection = () => {
             the gap between learning and real-world application, helping
             individuals and businesses grow through intelligent digital solutions
           </p>
-          <Button className="self-center md:self-start" asChild>
+          <Button className="md:self-start w-fit flex mx-auto!" asChild>
             <Link href="#features">Explore Services</Link>
           </Button>
           <div className="grid grid-cols-3 gap-4 pt-4 md:gap-6">

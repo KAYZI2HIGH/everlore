@@ -2,7 +2,7 @@ import { Header } from "@/components/header";
 
 const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="pt-20">
+    <div className="pt-10 md:pt-20">
       {/* <AdvertBanner /> */}
       <Header maxwidth={true} />
       {children}
