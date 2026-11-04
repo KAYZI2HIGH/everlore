@@ -78,9 +78,9 @@ const MyLearningPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-muted/40">
       {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 bg-white border-b border-slate-200">
+      <div className="px-6 md:px-20 py-4 bg-background border-b border-border">
         <BreadcrumbUI
           items={[
             { label: "Home", href: "/" },
@@ -91,14 +91,14 @@ const MyLearningPage = () => {
       </div>
 
       {/* Header and Filters Container */}
-      <div className="px-6 md:px-20 py-8 bg-white">
+      <div className="px-6 md:px-20 py-8 bg-background">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 mb-6">
           {/* Header */}
           <div className="shrink-0">
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">
+            <h1 className="text-4xl font-bold text-foreground mb-2">
               My Learning
             </h1>
-            <p className="text-slate-600">
+            <p className="text-muted-foreground">
               Continue learning with your enrolled courses
             </p>
           </div>
@@ -107,7 +107,7 @@ const MyLearningPage = () => {
           <div className="flex-1 lg:max-w-sm space-y-4">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search courses or instructors..."
@@ -124,7 +124,7 @@ const MyLearningPage = () => {
                 className={`text-sm ${
                   selectedFilter === "all" ?
                     "bg-emerald-600 text-white"
-                  : "bg-slate-100 text-slate-900 hover:bg-slate-200"
+                  : "bg-secondary text-foreground hover:bg-secondary/80"
                 }`}
               >
                 All ({stats.total})
@@ -134,7 +134,7 @@ const MyLearningPage = () => {
                 className={`text-sm ${
                   selectedFilter === "in-progress" ?
                     "bg-emerald-600 text-white"
-                  : "bg-slate-100 text-slate-900 hover:bg-slate-200"
+                  : "bg-secondary text-foreground hover:bg-secondary/80"
                 }`}
               >
                 In Progress ({stats.inProgress})
@@ -144,7 +144,7 @@ const MyLearningPage = () => {
                 className={`text-sm ${
                   selectedFilter === "completed" ?
                     "bg-emerald-600 text-white"
-                  : "bg-slate-100 text-slate-900 hover:bg-slate-200"
+                  : "bg-secondary text-foreground hover:bg-secondary/80"
                 }`}
               >
                 Completed ({stats.completed})
@@ -157,12 +157,12 @@ const MyLearningPage = () => {
       {/* Course Grid */}
       <div className="px-6 md:px-20 py-8">
         {isLoading ?
-          <div className="bg-white rounded-lg p-12 text-center">
-            <p className="text-slate-600">Loading your courses...</p>
+          <div className="bg-card rounded-lg p-12 text-center">
+            <p className="text-muted-foreground">Loading your courses...</p>
           </div>
         : filteredCourses.length === 0 ?
-          <div className="bg-white rounded-lg p-12 text-center">
-            <p className="text-slate-600 text-lg mb-4">
+          <div className="bg-card rounded-lg p-12 text-center">
+            <p className="text-muted-foreground text-lg mb-4">
               {enrolledCourses.length === 0 ?
                 "You haven't enrolled in any courses yet"
               : "No courses found matching your criteria"}
@@ -180,9 +180,9 @@ const MyLearningPage = () => {
                 href={`/academy/courses/${course.slug.current}`}
                 className="group"
               >
-                <div className="bg-white rounded-lg overflow-hidden border border-slate-200 hover:border-emerald-300 hover:shadow-lg transition-all duration-300">
+                <div className="bg-card rounded-lg overflow-hidden border border-border hover:border-emerald-300 hover:shadow-lg transition-all duration-300">
                   {/* Thumbnail */}
-                  <div className="relative w-full h-40 bg-slate-200 overflow-hidden">
+                  <div className="relative w-full h-40 bg-secondary overflow-hidden">
                     <Image
                       src={course.image || "/academy.avif"}
                       alt={course.title}
@@ -216,23 +216,23 @@ const MyLearningPage = () => {
                   {/* Content */}
                   <div className="p-4 space-y-3">
                     {/* Title */}
-                    <h3 className="font-semibold text-slate-900 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                    <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-emerald-600 transition-colors">
                       {course.title}
                     </h3>
 
                     {/* Instructor & Rating */}
                     <div className="flex items-center justify-between text-sm">
-                      <p className="text-slate-600">{course.instructor}</p>
+                      <p className="text-muted-foreground">{course.instructor}</p>
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold text-slate-900">
+                        <span className="font-semibold text-foreground">
                           {course.rating}
                         </span>
                       </div>
                     </div>
 
                     {/* Action Button */}
-                    <Button className="w-full mt-2 bg-slate-100 text-slate-900 hover:bg-slate-200">
+                    <Button className="w-full mt-2 bg-secondary text-foreground hover:bg-secondary/80">
                       Continue Learning
                     </Button>
                   </div>

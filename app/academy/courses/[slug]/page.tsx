@@ -178,9 +178,9 @@ const CourseDetailsPage = () => {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-lg text-slate-600 mb-4">Course not found</p>
+          <p className="text-lg text-muted-foreground mb-4">Course not found</p>
           <Link href="/academy/courses">
             <Button>Back to Courses</Button>
           </Link>
@@ -190,9 +190,9 @@ const CourseDetailsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 border-b border-slate-200">
+      <div className="px-6 md:px-20 py-4 border-b border-border">
         <BreadcrumbUI
           items={[
             { label: "Home", href: "/" },
@@ -207,7 +207,7 @@ const CourseDetailsPage = () => {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8">
           {/* Course Image */}
-          <div className="relative w-full h-96 rounded-lg overflow-hidden bg-slate-200">
+          <div className="relative w-full h-96 rounded-lg overflow-hidden bg-secondary">
             {isPurchased && course.videoUrl ?
               <div className="w-full h-full bg-black flex items-center justify-center">
                 <iframe
@@ -247,29 +247,29 @@ const CourseDetailsPage = () => {
 
           {/* Course Title & Meta */}
           <div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-4">
+            <h1 className="text-4xl font-bold text-foreground mb-4">
               {course.title}
             </h1>
             <div className="flex flex-wrap gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                <span className="font-semibold text-slate-900">
+                <span className="font-semibold text-foreground">
                   {course.rating}
                 </span>
-                <span className="text-slate-600">(342 reviews)</span>
+                <span className="text-muted-foreground">(342 reviews)</span>
               </div>
-              <div className="flex items-center gap-2 text-slate-600">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Users className="w-5 h-5" />
                 <span>{course.students?.toLocaleString() || "0"} students</span>
               </div>
-              <div className="flex items-center gap-2 text-slate-600">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="w-5 h-5" />
                 <span>{course.duration} hours</span>
               </div>
             </div>
 
             {/* Instructor */}
-            <div className="flex items-center gap-4 pb-6 border-b border-slate-200">
+            <div className="flex items-center gap-4 pb-6 border-b border-border">
               <Image
                 src="https://api.dicebear.com/7.x/avataaars/svg?seed=Instructor"
                 alt={course.instructor}
@@ -278,23 +278,23 @@ const CourseDetailsPage = () => {
                 className="rounded-full"
               />
               <div>
-                <p className="font-semibold text-slate-900">
+                <p className="font-semibold text-foreground">
                   {course.instructor}
                 </p>
-                <p className="text-sm text-slate-600">Course Instructor</p>
+                <p className="text-sm text-muted-foreground">Course Instructor</p>
               </div>
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            <h2 className="text-2xl font-bold text-foreground mb-4">
               About this course
             </h2>
-            <p className="text-slate-600 leading-relaxed mb-4">
+            <p className="text-muted-foreground leading-relaxed mb-4">
               {course.description}
             </p>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               Learn practical skills and gain hands-on experience with
               real-world projects. This comprehensive course covers everything
               you need to master this subject.
@@ -303,7 +303,7 @@ const CourseDetailsPage = () => {
 
           {/* What You'll Learn */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
               What you'll learn
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -313,15 +313,15 @@ const CourseDetailsPage = () => {
                   className="flex gap-3"
                 >
                   <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-1" />
-                  <span className="text-slate-700">{point}</span>
+                  <span className="text-foreground/80">{point}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Course Highlights */}
-          <div className="bg-slate-50 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-6">
+          <div className="bg-muted/40 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-foreground mb-6">
               Course highlights
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -337,7 +337,7 @@ const CourseDetailsPage = () => {
                   >
                     <Icon className="w-6 h-6 text-emerald-600 shrink-0" />
                     <div>
-                      <p className="font-semibold text-slate-900">{text}</p>
+                      <p className="font-semibold text-foreground">{text}</p>
                     </div>
                   </div>
                 );
@@ -347,25 +347,25 @@ const CourseDetailsPage = () => {
 
           {/* Course Curriculum */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
               Course curriculum
             </h2>
             <div className="space-y-2">
               {modules.map((module) => (
                 <div
                   key={module.id}
-                  className="border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors cursor-pointer"
+                  className="border border-border rounded-lg p-4 hover:border-foreground/20 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold text-slate-900">
+                      <h3 className="font-semibold text-foreground">
                         {module.title}
                       </h3>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-muted-foreground">
                         {module.lessons} lessons • {module.duration}
                       </p>
                     </div>
-                    <ChevronDown className="w-5 h-5 text-slate-400" />
+                    <ChevronDown className="w-5 h-5 text-muted-foreground" />
                   </div>
                 </div>
               ))}
@@ -374,14 +374,14 @@ const CourseDetailsPage = () => {
 
           {/* FAQs */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
               Frequently asked questions
             </h2>
             <div className="space-y-2">
               {faqs.map((faq) => (
                 <div
                   key={faq.id}
-                  className="border border-slate-200 rounded-lg overflow-hidden"
+                  className="border border-border rounded-lg overflow-hidden"
                 >
                   <button
                     onClick={() =>
@@ -389,20 +389,20 @@ const CourseDetailsPage = () => {
                         expandedFAQ === faq.id ? null : faq.id || null,
                       )
                     }
-                    className="w-full px-4 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                    className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/60 transition-colors"
                   >
-                    <span className="font-semibold text-slate-900 text-left">
+                    <span className="font-semibold text-foreground text-left">
                       {faq.question}
                     </span>
                     <ChevronDown
-                      className={`w-5 h-5 text-slate-400 transition-transform ${
+                      className={`w-5 h-5 text-muted-foreground transition-transform ${
                         expandedFAQ === faq.id ? "rotate-180" : ""
                       }`}
                     />
                   </button>
                   {expandedFAQ === faq.id && (
-                    <div className="px-4 py-4 bg-slate-50 border-t border-slate-200">
-                      <p className="text-slate-600">{faq.answer}</p>
+                    <div className="px-4 py-4 bg-muted/40 border-t border-border">
+                      <p className="text-muted-foreground">{faq.answer}</p>
                     </div>
                   )}
                 </div>
@@ -412,14 +412,14 @@ const CourseDetailsPage = () => {
 
           {/* Reviews */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
               Student reviews
             </h2>
             <div className="space-y-4">
               {reviews.map((review) => (
                 <div
                   key={review.id}
-                  className="border border-slate-200 rounded-lg p-4"
+                  className="border border-border rounded-lg p-4"
                 >
                   <div className="flex gap-4 mb-3">
                     <Image
@@ -430,7 +430,7 @@ const CourseDetailsPage = () => {
                       className="rounded-full"
                     />
                     <div>
-                      <p className="font-semibold text-slate-900">
+                      <p className="font-semibold text-foreground">
                         {review.author}
                       </p>
                       <div className="flex gap-1">
@@ -440,14 +440,14 @@ const CourseDetailsPage = () => {
                             className={`w-4 h-4 ${
                               i < (review.rating || 0) ?
                                 "fill-yellow-400 text-yellow-400"
-                              : "text-slate-300"
+                              : "text-muted-foreground/40"
                             }`}
                           />
                         ))}
                       </div>
                     </div>
                   </div>
-                  <p className="text-slate-600">{review.text}</p>
+                  <p className="text-muted-foreground">{review.text}</p>
                 </div>
               ))}
             </div>
@@ -456,13 +456,13 @@ const CourseDetailsPage = () => {
 
         {/* Sidebar - Course Card */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 bg-white border border-slate-200 rounded-lg p-6">
+          <div className="sticky top-24 bg-card border border-border rounded-lg p-6">
             {!isPurchased ?
               <>
                 {/* Price */}
                 <div className="mb-6">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-slate-900">
+                    <span className="text-4xl font-bold text-foreground">
                       ₦{course.price?.toLocaleString() || "0"}
                     </span>
                   </div>
@@ -484,7 +484,7 @@ const CourseDetailsPage = () => {
                     onClick={handleToggleWishlist}
                     disabled={addingToWishlist}
                     variant="outline"
-                    className="w-full py-3 border-slate-300 disabled:opacity-50"
+                    className="w-full py-3 border-border disabled:opacity-50"
                   >
                     <Heart
                       className={`w-4 h-4 mr-2 ${
@@ -542,24 +542,24 @@ const CourseDetailsPage = () => {
             }
 
             {/* Course Info */}
-            <div className="space-y-4 border-t border-slate-200 pt-6">
+            <div className="space-y-4 border-t border-border pt-6">
               <div>
-                <p className="text-sm text-slate-600 mb-1">Language</p>
-                <p className="font-semibold text-slate-900">English</p>
+                <p className="text-sm text-muted-foreground mb-1">Language</p>
+                <p className="font-semibold text-foreground">English</p>
               </div>
               <div>
-                <p className="text-sm text-slate-600 mb-1">Level</p>
-                <p className="font-semibold text-slate-900">{course.level}</p>
+                <p className="text-sm text-muted-foreground mb-1">Level</p>
+                <p className="font-semibold text-foreground">{course.level}</p>
               </div>
               <div>
-                <p className="text-sm text-slate-600 mb-1">Duration</p>
-                <p className="font-semibold text-slate-900">
+                <p className="text-sm text-muted-foreground mb-1">Duration</p>
+                <p className="font-semibold text-foreground">
                   {course.duration} hours
                 </p>
               </div>
               <div>
-                <p className="text-sm text-slate-600 mb-1">Category</p>
-                <p className="font-semibold text-slate-900">
+                <p className="text-sm text-muted-foreground mb-1">Category</p>
+                <p className="font-semibold text-foreground">
                   {course.category}
                 </p>
               </div>

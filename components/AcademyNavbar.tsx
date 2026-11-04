@@ -13,6 +13,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Logo } from "./header";
 import ProfileDropdown from "./ProfileDropdown";
+import { ThemeToggle } from "./theme-toggle";
 import { useCart } from "@/hooks/useCart";
 
 const AcademyNavbar = () => {
@@ -67,6 +68,9 @@ const AcademyNavbar = () => {
 
           {/* Right Section */}
           <div className="hidden md:flex items-center gap-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Cart */}
             <Button
               size="icon"
@@ -150,6 +154,7 @@ const AcademyNavbar = () => {
                   )}
                 </Link>
               </Button>
+              <ThemeToggle />
             </div>
           </div>
         )}

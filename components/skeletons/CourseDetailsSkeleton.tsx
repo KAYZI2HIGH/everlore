@@ -2,9 +2,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function CourseDetailsSkeleton() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Breadcrumb skeleton */}
-      <div className="px-6 md:px-20 py-4 border-b border-slate-200">
+      <div className="px-6 md:px-20 py-4 border-b border-border">
         <div className="flex gap-2">
           <Skeleton className="h-4 w-12" />
           <Skeleton className="h-4 w-20" />
@@ -34,7 +34,7 @@ export function CourseDetailsSkeleton() {
             </div>
 
             {/* Instructor */}
-            <div className="flex items-center gap-4 pt-4 border-t border-slate-200">
+            <div className="flex items-center gap-4 pt-4 border-t border-border">
               <Skeleton className="h-12 w-12 rounded-full" />
               <div className="space-y-2">
                 <Skeleton className="h-4 w-24" />
@@ -65,7 +65,7 @@ export function CourseDetailsSkeleton() {
           </div>
 
           {/* Course highlights */}
-          <div className="bg-slate-50 rounded-lg p-6 space-y-4">
+          <div className="bg-muted/40 rounded-lg p-6 space-y-4">
             <Skeleton className="h-6 w-40" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -121,7 +121,7 @@ export function CourseDetailsSkeleton() {
         <div className="lg:col-span-1">
           <div className="sticky top-24 space-y-4">
             {/* Price */}
-            <div className="space-y-3 p-6 bg-white border border-slate-200 rounded-lg">
+            <div className="space-y-3 p-6 bg-card border border-border rounded-lg">
               <Skeleton className="h-8 w-24" />
               <Skeleton className="h-4 w-32" />
 
@@ -133,7 +133,7 @@ export function CourseDetailsSkeleton() {
             </div>
 
             {/* Course info */}
-            <div className="p-6 bg-white border border-slate-200 rounded-lg space-y-4">
+            <div className="p-6 bg-card border border-border rounded-lg space-y-4">
               <div className="space-y-2">
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-4 w-16" />

@@ -107,9 +107,9 @@ const WishlistPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 border-b border-slate-200">
+      <div className="px-6 md:px-20 py-4 border-b border-border">
         <BreadcrumbUI
           items={[
             { label: "Home", href: "/" },
@@ -121,8 +121,8 @@ const WishlistPage = () => {
 
       {/* Header */}
       <div className="px-6 md:px-20 py-8 pb-0">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Wishlist</h1>
-        <p className="text-slate-600">
+        <h1 className="text-3xl font-bold text-foreground mb-2">Wishlist</h1>
+        <p className="text-muted-foreground">
           Manage your wishlist items and add them to your cart when ready.
         </p>
       </div>
@@ -133,7 +133,7 @@ const WishlistPage = () => {
           {/* Search */}
           <div className="mb-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search wishlist..."
@@ -146,11 +146,11 @@ const WishlistPage = () => {
 
           {isLoading ?
             <div className="py-12 text-center">
-              <p className="text-slate-600">Loading your wishlist...</p>
+              <p className="text-muted-foreground">Loading your wishlist...</p>
             </div>
           : filteredItems.length === 0 ?
             <div className="py-12 text-center">
-              <p className="text-slate-600 text-lg mb-4">
+              <p className="text-muted-foreground text-lg mb-4">
                 {searchQuery ?
                   "No courses found in your wishlist"
                 : "Your wishlist is empty"}
@@ -165,14 +165,14 @@ const WishlistPage = () => {
               {filteredItems.map((item: WishlistItem) => (
                 <div
                   key={item._id}
-                  className="border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors"
+                  className="border border-border rounded-lg p-4 hover:border-foreground/20 transition-colors"
                 >
                   <div className="flex gap-4">
                     {/* Thumbnail */}
                     <Link
                       href={`/academy/courses/${item.slug?.current || item._id}`}
                     >
-                      <div className="relative w-24 h-24 rounded overflow-hidden bg-slate-200 shrink-0 hover:opacity-80 transition-opacity">
+                      <div className="relative w-24 h-24 rounded overflow-hidden bg-secondary shrink-0 hover:opacity-80 transition-opacity">
                         <Image
                           src={item.image || "/academy.avif"}
                           alt={item.title}
@@ -187,14 +187,14 @@ const WishlistPage = () => {
                       <Link
                         href={`/academy/courses/${item.slug?.current || item._id}`}
                       >
-                        <h3 className="font-semibold text-slate-900 hover:text-emerald-600 transition-colors line-clamp-2 mb-1">
+                        <h3 className="font-semibold text-foreground hover:text-emerald-600 transition-colors line-clamp-2 mb-1">
                           {item.title}
                         </h3>
                       </Link>
-                      <p className="text-sm text-slate-600 mb-2">
+                      <p className="text-sm text-muted-foreground mb-2">
                         {item.instructor}
                       </p>
-                      <div className="flex flex-wrap gap-3 text-xs text-slate-600">
+                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <span className="w-3 h-3" />
                           {item.rating}
@@ -207,7 +207,7 @@ const WishlistPage = () => {
                     {/* Price & Actions */}
                     <div className="flex flex-col items-end justify-between gap-2">
                       <div className="text-right">
-                        <p className="text-xl font-bold text-slate-900">
+                        <p className="text-xl font-bold text-foreground">
                           ₦{item.price.toLocaleString()}
                         </p>
                       </div>
@@ -216,7 +216,7 @@ const WishlistPage = () => {
                         <button
                           onClick={() => handleRemoveFromWishlist(item._id)}
                           disabled={togglingWishlist === item._id}
-                          className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          className="p-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                           title="Remove from wishlist"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -241,26 +241,26 @@ const WishlistPage = () => {
 
         {/* Sidebar Summary */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 bg-slate-50 border border-slate-200 rounded-lg p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">
+          <div className="sticky top-24 bg-muted/40 border border-border rounded-lg p-6">
+            <h3 className="font-semibold text-foreground mb-4">
               Wishlist Summary
             </h3>
 
-            <div className="space-y-4 pb-4 border-b border-slate-200 mb-4">
+            <div className="space-y-4 pb-4 border-b border-border mb-4">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Items</span>
-                <span className="font-semibold text-slate-900">
+                <span className="text-muted-foreground">Items</span>
+                <span className="font-semibold text-foreground">
                   {wishlistItems.length}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Total value</span>
-                <span className="font-semibold text-slate-900">
+                <span className="text-muted-foreground">Total value</span>
+                <span className="font-semibold text-foreground">
                   ₦{totalValue.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">You save</span>
+                <span className="text-muted-foreground">You save</span>
                 <span className="font-semibold text-emerald-600">
                   ₦{savings.toLocaleString()}
                 </span>

@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function CourseCardSkeleton() {
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
+    <div className="border border-border rounded-lg overflow-hidden bg-card">
       {/* Image skeleton */}
       <Skeleton className="w-full h-48" />
 

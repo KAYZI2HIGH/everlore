@@ -38,9 +38,9 @@ export function CourseCard({
 }: CourseCardProps) {
   const { isInWishlist, toggleWishlist } = useWishlist();
   return (
-    <div className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-slate-200">
+    <div className="group relative bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-border">
       {/* Image Container */}
-      <div className="relative h-48 bg-slate-200 overflow-hidden">
+      <div className="relative h-48 bg-secondary overflow-hidden">
         <Image
           src={thumbnail}
           alt={title}
@@ -63,11 +63,11 @@ export function CourseCard({
         {/* Wishlist Icon */}
         <button
           onClick={() => toggleWishlist(id)}
-          className="absolute top-3 right-3 bg-white rounded-full p-2 hover:bg-slate-100 transition-colors z-10"
+          className="absolute top-3 right-3 bg-card rounded-full p-2 hover:bg-secondary/80 transition-colors z-10"
         >
           <Heart
             className={`w-5 h-5 transition-colors ${
-              isInWishlist(id) ? "fill-red-500 text-red-500" : "text-slate-400"
+              isInWishlist(id) ? "fill-red-500 text-red-500" : "text-muted-foreground"
             }`}
           />
         </button>
@@ -97,7 +97,7 @@ export function CourseCard({
         {/* Title */}
         <Link
           href={`/academy/courses/${slug}`}
-          className="font-semibold text-slate-900 line-clamp-2 mb-3 group-hover:text-green-600 transition-colors"
+          className="font-semibold text-foreground line-clamp-2 mb-3 group-hover:text-green-600 transition-colors"
         >
           {title}
         </Link>
@@ -106,28 +106,28 @@ export function CourseCard({
         <div className="flex items-center justify-between mb-3 text-xs">
           <Badge
             variant="outline"
-            className="bg-slate-100 text-slate-700"
+            className="bg-secondary text-foreground/80"
           >
             📚 {category}
           </Badge>
-          <div className="flex items-center gap-1 text-slate-600">
+          <div className="flex items-center gap-1 text-muted-foreground">
             <Users className="w-3.5 h-3.5" />
             <span>{students}</span>
           </div>
         </div>
 
         {/* Instructor */}
-        <p className="text-xs text-slate-600 underline mb-3">{instructor}</p>
+        <p className="text-xs text-muted-foreground underline mb-3">{instructor}</p>
 
         {/* Spacer */}
         <div className="flex-1"></div>
 
         {/* Pricing */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm line-through text-slate-400">
+          <span className="text-sm line-through text-muted-foreground">
             ₦{originalPrice.toLocaleString()}
           </span>
-          <span className="text-lg font-bold text-slate-900">
+          <span className="text-lg font-bold text-foreground">
             ₦{price.toLocaleString()}
           </span>
         </div>
@@ -136,13 +136,13 @@ export function CourseCard({
         {isInCart ?
           <Button
             disabled
-            className="w-full bg-slate-200 text-slate-600 cursor-not-allowed"
+            className="w-full bg-secondary text-muted-foreground cursor-not-allowed"
           >
             Already in cart
           </Button>
         : <Button
             variant="outline"
-            className="w-full border-slate-300 hover:border-slate-400 text-slate-900"
+            className="w-full border-border hover:border-foreground/30 text-foreground"
             onClick={() => onAddToCart?.(id)}
           >
             Add to cart

@@ -120,9 +120,9 @@ const CartPage = () => {
     calculateTotals();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 border-b border-slate-200">
+      <div className="px-6 md:px-20 py-4 border-b border-border">
         <BreadcrumbUI
           items={[
             { label: "Home", href: "/" },
@@ -132,10 +132,10 @@ const CartPage = () => {
       </div>
 
       {/* Header Section */}
-      <div className="px-6 md:px-20 py-12 border-b border-slate-200">
+      <div className="px-6 md:px-20 py-12 border-b border-border">
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold text-slate-900">Shopping Cart</h1>
-          <p className="text-slate-600 text-base">
+          <h1 className="text-4xl font-bold text-foreground">Shopping Cart</h1>
+          <p className="text-muted-foreground text-base">
             {cartItems.length} course{cartItems.length !== 1 ? "s" : ""} in your
             cart
           </p>
@@ -149,7 +149,7 @@ const CartPage = () => {
           <div className="lg:col-span-2 space-y-6">
             {isLoading ?
               <div className="text-center py-12">
-                <p className="text-slate-600">Loading cart...</p>
+                <p className="text-muted-foreground">Loading cart...</p>
               </div>
             : cartItems.length === 0 ?
               <div className="flex flex-col items-center justify-center py-16 gap-6">
@@ -163,10 +163,10 @@ const CartPage = () => {
                   />
                 </div>
                 <div className="text-center space-y-3">
-                  <p className="text-slate-900 text-lg font-semibold">
+                  <p className="text-foreground text-lg font-semibold">
                     Your cart is empty
                   </p>
-                  <p className="text-slate-600 text-sm max-w-md">
+                  <p className="text-muted-foreground text-sm max-w-md">
                     Start exploring our courses and add them to your cart to get
                     started on your learning journey.
                   </p>
@@ -180,11 +180,11 @@ const CartPage = () => {
             : cartItems.map((item: CartItem) => (
                 <div
                   key={item._id}
-                  className="bg-white rounded-lg p-6 border border-slate-200 hover:border-slate-300 transition-colors"
+                  className="bg-card rounded-lg p-6 border border-border hover:border-foreground/20 transition-colors"
                 >
                   <div className="flex gap-4">
                     {/* Thumbnail */}
-                    <div className="relative w-32 h-24 shrink-0 rounded-lg overflow-hidden bg-slate-200">
+                    <div className="relative w-32 h-24 shrink-0 rounded-lg overflow-hidden bg-secondary">
                       <Image
                         src={item.image || "/academy.avif"}
                         alt={item.title}
@@ -196,11 +196,11 @@ const CartPage = () => {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <Link href={`/academy/courses`}>
-                        <h3 className="font-semibold text-slate-900 mb-1 line-clamp-2 hover:text-emerald-600 transition-colors">
+                        <h3 className="font-semibold text-foreground mb-1 line-clamp-2 hover:text-emerald-600 transition-colors">
                           {item.title}
                         </h3>
                       </Link>
-                      <p className="text-xs text-slate-600 mb-2">
+                      <p className="text-xs text-muted-foreground mb-2">
                         By {item.instructor}
                       </p>
 
@@ -208,20 +208,20 @@ const CartPage = () => {
                       <div className="flex flex-wrap gap-2 mb-3">
                         <Badge
                           variant="outline"
-                          className="text-xs bg-slate-100"
+                          className="text-xs bg-secondary"
                         >
                           📚 {item.category}
                         </Badge>
                         <Badge
                           variant="outline"
-                          className="text-xs bg-slate-100"
+                          className="text-xs bg-secondary"
                         >
                           {item.level}
                         </Badge>
                       </div>
 
                       {/* Stats */}
-                      <div className="flex gap-3 text-xs text-slate-600 mb-3">
+                      <div className="flex gap-3 text-xs text-muted-foreground mb-3">
                         <span>⭐ {item.rating}</span>
                         <span>👥 {item.students} students</span>
                       </div>
@@ -229,10 +229,10 @@ const CartPage = () => {
                       {/* Price & Actions */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm line-through text-slate-400">
+                          <span className="text-sm line-through text-muted-foreground">
                             ₦{(item.price * 1.5).toLocaleString()}
                           </span>
-                          <span className="text-lg font-bold text-slate-900">
+                          <span className="text-lg font-bold text-foreground">
                             ₦{item.price.toLocaleString()}
                           </span>
                         </div>
@@ -241,7 +241,7 @@ const CartPage = () => {
                           <button
                             onClick={() => handleRemoveFromCart(item._id)}
                             disabled={removingFromCart === item._id}
-                            className="text-slate-500 hover:text-red-600 font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
+                            className="text-muted-foreground hover:text-red-600 font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
                           >
                             <Trash2 className="w-4 h-4" />
                             {removingFromCart === item._id ?
@@ -251,7 +251,7 @@ const CartPage = () => {
                           <button
                             onClick={() => handleToggleWishlist(item._id)}
                             disabled={togglingWishlist === item._id}
-                            className="text-slate-500 hover:text-red-600 font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
+                            className="text-muted-foreground hover:text-red-600 font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
                           >
                             <Heart
                               className={`w-4 h-4 transition-colors ${
@@ -275,38 +275,38 @@ const CartPage = () => {
 
           {/* Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg p-6 border border-slate-200 sticky top-24">
-              <h2 className="font-semibold text-slate-900 mb-6">Total</h2>
+            <div className="bg-card rounded-lg p-6 border border-border sticky top-24">
+              <h2 className="font-semibold text-foreground mb-6">Total</h2>
 
-              <div className="space-y-4 mb-6 pb-6 border-b border-slate-200">
+              <div className="space-y-4 mb-6 pb-6 border-b border-border">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Original price</span>
-                  <span className="text-slate-900 line-through">
+                  <span className="text-muted-foreground">Original price</span>
+                  <span className="text-foreground line-through">
                     ₦{originalTotal.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Discount offer</span>
+                  <span className="text-muted-foreground">Discount offer</span>
                   <span className="text-red-600 font-semibold">
                     -₦{discount.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Discount percent</span>
-                  <span className="text-slate-900 font-semibold">
+                  <span className="text-muted-foreground">Discount percent</span>
+                  <span className="text-foreground font-semibold">
                     {discountPercent}%
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Total course</span>
-                  <span className="text-slate-900 font-semibold">
+                  <span className="text-muted-foreground">Total course</span>
+                  <span className="text-foreground font-semibold">
                     {cartItems.length}
                   </span>
                 </div>
               </div>
 
-              <div className="mb-6 pb-6 border-b border-slate-200">
-                <div className="text-2xl font-bold text-slate-900">
+              <div className="mb-6 pb-6 border-b border-border">
+                <div className="text-2xl font-bold text-foreground">
                   ₦{currentTotal.toLocaleString()}
                 </div>
               </div>

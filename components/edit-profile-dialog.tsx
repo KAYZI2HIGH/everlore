@@ -108,7 +108,7 @@ export default function EditProfileDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-xl border border-slate-200">
+      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-xl border border-border">
         <div
           className="px-6 py-6 h-32"
           style={{
@@ -148,7 +148,7 @@ export default function EditProfileDialog({
           <form className="space-y-6">
             {/* Basic Info */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">
+              <h3 className="text-sm font-semibold text-foreground mb-4">
                 Basic Information
               </h3>
               <div className="space-y-4">
@@ -165,7 +165,7 @@ export default function EditProfileDialog({
                       placeholder="John Learner"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                   <div className="flex-1 space-y-2">
@@ -182,7 +182,7 @@ export default function EditProfileDialog({
                       value={formData.email}
                       onChange={handleInputChange}
                       disabled
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                 </div>
@@ -200,7 +200,7 @@ export default function EditProfileDialog({
                       placeholder="City, Country"
                       value={formData.location}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                   <div className="flex-1 space-y-2">
@@ -215,7 +215,7 @@ export default function EditProfileDialog({
                       placeholder="+234..."
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                 </div>
@@ -224,7 +224,7 @@ export default function EditProfileDialog({
 
             {/* Professional Info */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">
+              <h3 className="text-sm font-semibold text-foreground mb-4">
                 Professional Information
               </h3>
               <div className="space-y-4">
@@ -241,7 +241,7 @@ export default function EditProfileDialog({
                       placeholder="E.g. Software Developer, Designer"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                   <div className="flex-1 space-y-2">
@@ -256,7 +256,7 @@ export default function EditProfileDialog({
                       placeholder="Your company name"
                       value={formData.company}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                 </div>
@@ -274,7 +274,7 @@ export default function EditProfileDialog({
                       placeholder="E.g. React, Node.js, Python"
                       value={formData.skills}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                   <div className="flex-1 space-y-2">
@@ -289,7 +289,7 @@ export default function EditProfileDialog({
                       placeholder="E.g. 3 years"
                       value={formData.experience}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                 </div>
@@ -298,7 +298,7 @@ export default function EditProfileDialog({
 
             {/* Social Links */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">
+              <h3 className="text-sm font-semibold text-foreground mb-4">
                 Social & Portfolio
               </h3>
               <div className="space-y-4">
@@ -315,7 +315,7 @@ export default function EditProfileDialog({
                       placeholder="https://yourportfolio.com"
                       value={formData.portfolio}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                   <div className="flex-1 space-y-2">
@@ -330,7 +330,7 @@ export default function EditProfileDialog({
                       placeholder="https://github.com/username"
                       value={formData.github}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                 </div>
@@ -348,7 +348,7 @@ export default function EditProfileDialog({
                       placeholder="https://linkedin.com/in/username"
                       value={formData.linkedin}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                   <div className="flex-1 space-y-2">
@@ -363,7 +363,7 @@ export default function EditProfileDialog({
                       placeholder="https://twitter.com/username"
                       value={formData.twitter}
                       onChange={handleInputChange}
-                      className="bg-slate-50 border-slate-200"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                 </div>
@@ -372,7 +372,7 @@ export default function EditProfileDialog({
 
             {/* Bio */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">
+              <h3 className="text-sm font-semibold text-foreground mb-4">
                 About You
               </h3>
               <div className="space-y-2">
@@ -388,10 +388,10 @@ export default function EditProfileDialog({
                   value={bioValue}
                   onChange={handleInputChange}
                   maxLength={limit}
-                  className="bg-slate-50 border-slate-200 resize-none"
+                  className="bg-muted/40 border-border resize-none"
                   rows={4}
                 />
-                <p className="text-xs text-slate-500 text-right">
+                <p className="text-xs text-muted-foreground text-right">
                   {limit - characterCount} characters left
                 </p>
               </div>
@@ -399,11 +399,11 @@ export default function EditProfileDialog({
           </form>
         </div>
 
-        <DialogFooter className="border-t border-slate-200 px-6 py-4 bg-slate-50">
+        <DialogFooter className="border-t border-border px-6 py-4 bg-muted/40">
           <DialogClose asChild>
             <Button
               variant="outline"
-              className="border-slate-300"
+              className="border-border"
             >
               Cancel
             </Button>

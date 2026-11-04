@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MenuToggleIcon } from "@/components/menu-toggle-icon";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 
@@ -97,6 +98,7 @@ export function Header() {
               {link.label}
             </a>
           ))}
+          <ThemeToggle />
           <Button
             variant="outline"
             asChild
@@ -143,6 +145,7 @@ export function Header() {
           ))}
         </div>
         <div className="flex flex-col gap-2">
+          <ThemeToggle className="self-start" />
           <Button
             variant="outline"
             className="w-full bg-transparent"

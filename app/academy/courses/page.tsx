@@ -147,9 +147,9 @@ const CoursePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 border-b border-slate-200">
+      <div className="px-6 md:px-20 py-4 border-b border-border">
         <BreadcrumbUI
           items={[
             { label: "Home", href: "/" },
@@ -159,12 +159,12 @@ const CoursePage = () => {
       </div>
 
       {/* Header Section */}
-      <div className="px-6 md:px-20 py-12 border-b border-slate-200">
+      <div className="px-6 md:px-20 py-12 border-b border-border">
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold text-slate-900">
+          <h1 className="text-4xl font-bold text-foreground">
             Browse Our Courses
           </h1>
-          <p className="text-slate-600 text-base max-w-2xl">
+          <p className="text-muted-foreground text-base max-w-2xl">
             Explore our comprehensive course catalog to find the perfect course
             that suits your goals and career aspirations.
           </p>
@@ -172,13 +172,13 @@ const CoursePage = () => {
       </div>
 
       {/* Filters Section */}
-      <div className="px-6 md:px-20 py-8 border-b border-slate-200">
+      <div className="px-6 md:px-20 py-8 border-b border-border">
         <div className="space-y-6">
           {/* Category Filter */}
           {isLoading ?
             <CategoryFilterSkeleton />
           : <div className="space-y-4">
-              <h2 className="text-sm font-semibold text-slate-900">
+              <h2 className="text-sm font-semibold text-foreground">
                 Filter by Category
               </h2>
               <div className="flex flex-wrap gap-3">
@@ -189,7 +189,7 @@ const CoursePage = () => {
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all border-2 ${
                       selectedCategories.includes(category) ?
                         "border-emerald-600 bg-emerald-50 text-emerald-700"
-                      : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+                      : "border-border bg-card text-foreground/80 hover:border-foreground/30"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -219,18 +219,18 @@ const CoursePage = () => {
             onSubmit={handleSearch}
             className="space-y-4"
           >
-            <h2 className="text-sm font-semibold text-slate-900">
+            <h2 className="text-sm font-semibold text-foreground">
               Search Courses
             </h2>
             <div className="flex flex-col md:flex-row gap-3 max-w-2xl">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Enter keyword to search"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 py-3 bg-white border-2 border-slate-300 focus:border-emerald-600 focus:ring-0"
+                  className="pl-12 py-3 bg-background border-2 border-border focus:border-emerald-600 focus:ring-0"
                 />
               </div>
               <Button
@@ -245,7 +245,7 @@ const CoursePage = () => {
           {/* Active Filters Display */}
           {(selectedCategories.length > 0 || searchTerm) && (
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <span className="text-sm font-medium text-slate-600">
+              <span className="text-sm font-medium text-muted-foreground">
                 Active filters:
               </span>
               <div className="flex flex-wrap gap-2">
@@ -287,7 +287,7 @@ const CoursePage = () => {
       {/* Courses Grid */}
       <div className="px-6 md:px-20 py-12">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-8">
+          <h2 className="text-2xl font-bold text-foreground mb-8">
             {isLoading ?
               "Loading courses..."
             : `Available Courses (${filteredCourses.length})`}
@@ -333,10 +333,10 @@ const CoursePage = () => {
                 />
               </div>
               <div className="text-center space-y-2">
-                <p className="text-slate-900 text-lg font-semibold">
+                <p className="text-foreground text-lg font-semibold">
                   No courses match your filters
                 </p>
-                <p className="text-slate-600 text-sm max-w-md">
+                <p className="text-muted-foreground text-sm max-w-md">
                   Try clearing your filters or search to explore all available
                   courses.
                 </p>
@@ -345,7 +345,7 @@ const CoursePage = () => {
                 <Button
                   variant="outline"
                   onClick={handleClearFilters}
-                  className="border-slate-300"
+                  className="border-border"
                 >
                   Clear filters
                 </Button>

@@ -48,10 +48,10 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
             className="shrink-0 rounded-full border-2 border-emerald-400"
           />
           <div className="flex min-w-0 flex-col">
-            <span className="truncate text-sm font-semibold text-slate-900">
+            <span className="truncate text-sm font-semibold text-foreground">
               {session?.user?.name || "User"}
             </span>
-            <span className="truncate text-xs text-slate-600">
+            <span className="truncate text-xs text-muted-foreground">
               {session?.user?.email || "email@example.com"}
             </span>
           </div>
@@ -83,7 +83,7 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
               <Heart
                 size={16}
                 strokeWidth={2}
-                className="text-slate-500"
+                className="text-muted-foreground"
                 aria-hidden="true"
               />
               <span>Wishlist</span>
@@ -97,7 +97,7 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
               <ShoppingBag
                 size={16}
                 strokeWidth={2}
-                className="text-slate-500"
+                className="text-muted-foreground"
                 aria-hidden="true"
               />
               <span>Shopping Cart</span>
@@ -121,7 +121,7 @@ function ProfileDropdown({ children }: { children: React.ReactNode }) {
                 <User
                   size={16}
                   strokeWidth={2}
-                  className="text-slate-500"
+                  className="text-muted-foreground"
                   aria-hidden="true"
                 />
                 <span>Edit Profile</span>
