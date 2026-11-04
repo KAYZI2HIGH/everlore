@@ -5,48 +5,64 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev      # Next.js dev server (http://localhost:3000)
-npm run build    # production build
-npm run start    # serve production build
-npm run lint     # eslint (flat config, next/core-web-vitals + next/typescript)
-npx tsc --noEmit # typecheck — there is no `typecheck` script
+npm run dev               # Next.js dev server (http://localhost:3000)
+npm run build             # production build
+npm run start             # serve production build
+npm run lint              # eslint (flat config, next/core-web-vitals + next/typescript)
+npx tsc --noEmit          # typecheck — there is no `typecheck` script
+npm run db:generate       # drizzle-kit: write a new SQL migration into drizzle/ after editing lib/db/schema.ts
+npm run db:migrate        # apply drizzle/ migrations to the Neon DB in DATABASE_URL
+npm run db:import-sanity  # one-off, idempotent: copy legacy Sanity `user` docs into Postgres
 ```
 
-No test framework is configured. `npm run seed` is defined in package.json but `scripts/seed-courses.js` does not exist — the script is broken.
+No test framework is configured. Sanity Studio is served in-app at `/studio`. Env vars are listed in `.env.example`.
 
-Sanity Studio is served in-app at `/studio` (no separate studio process). `npx sanity <cmd>` works from the repo root via `sanity.cli.ts`.
-
-Required env vars in `.env.local` (see `AUTH_SETUP.md`): `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`, `NEXT_PUBLIC_SANITY_API_VERSION`, `SANITY_API_TOKEN`. Payments additionally need `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` and `PAYSTACK_SECRET_KEY` (not yet in the local template).
+**Local database.** With no `DATABASE_URL`, `lib/db/index.ts` opens an embedded Postgres (PGlite) in `./.data/pglite` and auto-applies `drizzle/` migrations. PGlite is single-process: stop `npm run dev` before running `db:import-sanity` locally. In production `DATABASE_URL` is required (it throws otherwise).
 
 ## Architecture
 
-Everlore is a Next.js 16 (App Router, React 19) course-selling platform. Sanity is the only datastore — it holds both the CMS content (courses, blog posts, job postings) *and* the user records (credentials, cart, wishlist, enrollments). There is no separate database.
+Everlore is a Next.js 16 (App Router, React 19) course platform with two datastores:
+- **Sanity**: content only (courses, blog posts, job postings). Read via `lib/content.ts` (server-only) using the token client `lib/sanity.ts`. Courses are referenced elsewhere by their Sanity `_id`.
+- **Postgres (Drizzle; Neon in prod)**: everything belonging to a person or a transaction. That means users and roles, enrollments, cart, wishlist, payments and contact messages. Schema is in `lib/db/schema.ts`. Legacy `user` docs in Sanity are no longer read.
 
-**The central pattern: server actions, not API routes.** `lib/actions/sanity.actions.ts` is the single data layer for the entire app — every GROQ read and every Sanity mutation lives there as a `"use server"` function. Client components import those functions directly and call them from React Query hooks or `useEffect`. The only API route is the NextAuth catch-all (`app/api/auth/[...nextauth]/route.ts`). When adding a data operation, add it to `sanity.actions.ts` rather than creating a route handler.
+**Server actions, not API routes.** Client components call `"use server"` functions in `lib/actions/*`:
+- `account.actions.ts`: cart, wishlist, enrollments, profile
+- `checkout.actions.ts`: Paystack
+- `contact.actions.ts`
+- `admin.actions.ts`
+- `auth.actions.ts`
+- `sanity.actions.ts`: thin public content wrappers for client pages
 
-Because that file uses `lib/sanity.ts` (the token-bearing write client), all reads/writes are server-side and privileged; authorization is enforced per-action by calling `auth()` and matching `session.user.email` to the Sanity user document.
+Server components import `lib/content.ts`, `lib/admin.ts` and `lib/db/users.ts` directly. The only API route is NextAuth's. Every action that touches user data calls `requireUser()` / `requireAdmin()` from `lib/session.ts`, which re-reads the user row (and its role) from the DB. Never trust a client-supplied user id, email, price or course list.
 
-**Route groups**
-- `app/(auth)/` — sign-in / sign-up
-- `app/academy/` — authed product area (courses, course detail, cart, wishlist, learning); own navbar/footer layout
-- `app/blog/`, `app/hiring/`, `app/page.tsx` — public marketing, composed from top-level `components/*` sections
-- `app/studio/[[...tool]]/` — embedded Sanity Studio
+**Paid content.** `lib/content.ts` deliberately omits `videoUrl` from course queries; only `fetchCourseVideoUrl()` returns it. Call that only after `isEnrolled()` (see `app/academy/courses/[slug]/page.tsx`).
 
-**Auth.** Auth.js v5 (`next-auth@5 beta`) with JWT sessions, Google OAuth + a Credentials provider that bcrypt-compares against `user.passwordHash` in Sanity. The Google `signIn` callback auto-creates a Sanity user on first login. `middleware.ts` guards `/academy/*` and `/profile/*` (redirect to `/sign-in`) and bounces authed users off `/sign-in` and `/sign-up`. Sign-up/sign-in server actions live in `lib/actions/auth.actions.ts` and `redirect("/academy/courses")` on success — note they `throw` on `NEXT_REDIRECT`, which is expected control flow, so don't "fix" that by swallowing it.
+**Routes**
+- `app/page.tsx`: marketing home, composed from `components/home/*`. It shares `components/site/site-header.tsx` and `site-footer.tsx` with academy, blog and hiring.
+- `app/academy/`: `/academy` is the public catalog (`/academy/courses` redirects there). `/academy/courses/[slug]` is a public server-rendered course page. `cart`, `learning` and `wishlist` require sign-in.
+- `app/admin/`: admin dashboard (overview, courses, students, payments, messages). The layout redirects non-admins. Read models live in `lib/admin.ts`.
+- `app/(auth)/`: sign-in and sign-up. `app/studio/[[...tool]]/`: embedded Sanity Studio.
 
-**Payments.** `hooks/usePaystack.ts` lazy-imports `@paystack/inline-js` client-side and opens the inline modal. On `onSuccess` it calls `verifyPaystackPayment()` (server-side call to the Paystack verify endpoint with the secret key) and only then `enrollUserInCourses()`, which appends to `enrolledCourses` and clears the cart in one Sanity patch. Never enroll from the client callback without the server verify step.
+**Auth.** Auth.js v5 with JWT sessions, Google + Credentials (bcrypt against `users.password_hash`).
+- `auth.config.ts` is the edge-safe shared config, used by `proxy.ts` (Next 16's renamed middleware). `auth.ts` is the full instance with providers and DB callbacks. `lib/auth.ts` only re-exports `@/auth`.
+- The JWT carries our Postgres user id and `role`. Emails in `ADMIN_EMAILS` are promoted to admin on sign-in, and a role change needs a fresh sign-in to reach the token.
+- `proxy.ts` guards `/academy/{cart,learning,wishlist}`, `/profile` and `/admin`, appending `?callbackUrl=`.
+- `signInAction` / `signUpAction` return `{ redirectTo }` and the client does `window.location.assign`. A full reload is required so `SessionProvider` sees the new session; a server-side `redirect()` leaves the header showing "Sign in".
 
-**Client data fetching.** React Query is wired through `providers/root-providers.tsx` (SessionProvider → QueryProvider → Toaster) in the root layout. `hooks/useCart.ts` and `hooks/useWishlist.ts` are the ones actually used by pages; they own the `["cart"]` / `["wishlist"]` query keys with optimistic updates. Match those key names when invalidating.
+**Payments.**
+- `startCheckout()` prices the user's cart server-side from Sanity and inserts a `pending` row in `payments` with our own reference.
+- `hooks/usePaystack.ts` opens Paystack inline with exactly that reference and amount.
+- `completeCheckout(reference)` verifies with Paystack. It checks status, amount ≥ expected, currency and ownership, then marks the payment successful, inserts enrollments and clears those cart items in one transaction. It's idempotent.
+- Amounts are in kobo. Currency is `site.currency` (NGN) from `lib/config.ts`.
+- There's no webhook yet, so a buyer who closes the tab mid-verify stays `pending`.
 
-**UI.** shadcn/ui (new-york style, neutral base, lucide icons) in `components/ui/`, Tailwind v4 via `@tailwindcss/postcss` with theme tokens defined in `app/globals.css` (`@theme inline` + CSS variables, `.dark` variant). Feature components live flat in `components/`; loading states in `components/skeletons/`. Remote images are restricted to `cdn.sanity.io` and `api.dicebear.com` in `next.config.ts` — add a `remotePatterns` entry before using any other host.
+**Client data fetching.** React Query via `providers/root-providers.tsx` (ThemeProvider → SessionProvider → QueryProvider → Toaster). Query keys: `["cart"]` (`hooks/useCart.ts`), `["wishlist"]` (`hooks/useWishlist.ts`), `["account"]` (`hooks/useAccount.ts`) and `["learning"]`. `useCourseActions()` wraps cart/wishlist with sign-in redirects and toasts for course cards.
 
-## Known duplication — pick the right file
+**UI.** shadcn/ui in `components/ui/`, Tailwind v4 tokens in `app/globals.css` (navy `primary`, `brand` blue, `gold` accent, `ink` dark sections, `.dark` overrides). Use semantic classes only so dark mode works. Utilities: `container-page`, `text-serif-accent` (Instrument Serif italic accent words in headings). Font: Plus Jakarta Sans. Photos are self-hosted in `public/images/` (Unsplash licence). Remote images are allowed only from `cdn.sanity.io` and `api.dicebear.com` (`next.config.ts`).
 
-The repo has several parallel copies from an earlier refactor. Editing the wrong one silently does nothing:
+## Gotchas
 
-- **Sanity schemas:** `sanity/schemaTypes/` is live (wired into `sanity.config.ts`). Root `schemaTypes/` is dead and out of date — its `course` schema is missing `videoUrl`, `learningPoints`, `highlights`, and more. Edit `sanity/schemaTypes/`.
-- **Auth instance:** root `auth.ts` and `lib/auth.ts` both call `NextAuth(...)` with near-identical config. `middleware.ts`, the route handler, and `auth.actions.ts` import `@/auth`; `sanity.actions.ts` imports `@/lib/auth`. Config changes must be applied to both or sessions will diverge.
-- **Sanity clients:** `lib/sanity.ts` (token, used by all actions) vs `sanity/lib/client.ts` (CDN, no token, used only by `sanity/lib/live.ts`, which is itself unused). Use `@/lib/sanity` for anything in `lib/actions/`.
-- **Cart/wishlist hooks:** `hooks/use-sanity.ts` (keys `["user","current"]`) is legacy; pages use `hooks/useCart.ts` / `hooks/useWishlist.ts`.
-
-`AUTH_IMPLEMENTATION.md` and `AUTH_SETUP.md` describe the auth design but reference the pre-refactor layout (e.g. `lib/auth.ts` as the single auth entry, `schemaTypes/user.ts`); trust the code over those docs.
+- Sanity schemas: edit `sanity/schemaTypes/` (wired into `sanity.config.ts`). The `user` schema there is legacy.
+- `sanity/lib/client.ts` and `sanity/lib/live.ts` are unused; use `@/lib/sanity`.
+- `AUTH_IMPLEMENTATION.md` and `AUTH_SETUP.md` predate the Postgres move. Trust the code.
+- Blog and hiring pages haven't been redesigned yet and carry pre-existing lint errors.

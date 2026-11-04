@@ -7,8 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getAllBlogPosts } from "@/lib/actions/sanity.actions";
 import imageUrlBuilder from "@sanity/image-url";
-import { Header } from "@/components/header";
-import { MinimalFooter } from "@/components/minimal-footer";
 
 interface BlogPost {
   _id: string;

@@ -1,16 +1,12 @@
-import AcademyFooter from "@/components/AcademyFooter";
-import AcademyNavbar from "@/components/AcademyNavbar";
-import { AdvertBanner } from "@/components/AdvertBanner";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 
-const AcademyLayout = ({ children }: { children: React.ReactNode }) => {
+export default function AcademyLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div>
-      {/* <AdvertBanner /> */}
-      <AcademyNavbar />
-      {children}
-      <AcademyFooter />
-    </div>
+    <>
+      <SiteHeader />
+      <main className="min-h-[70vh]">{children}</main>
+      <SiteFooter />
+    </>
   );
-};
-
-export default AcademyLayout;
+}

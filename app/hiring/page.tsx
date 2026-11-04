@@ -4,8 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, MapPin, Briefcase, DollarSign, Mail } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Header } from "@/components/header";
-import { MinimalFooter } from "@/components/minimal-footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { getAllJobPostings } from "@/lib/actions/sanity.actions";
 
 interface JobPosting {
@@ -53,20 +53,20 @@ export default function HiringPage() {
   if (isLoading) {
     return (
       <>
-        <Header />
+        <SiteHeader />
         <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
             <p className="text-lg text-slate-600">Loading job postings...</p>
           </div>
         </div>
-        <MinimalFooter />
+        <SiteFooter />
       </>
     );
   }
 
   return (
     <>
-      <Header />
+      <SiteHeader />
       <section className="py-18 px-4! relative">
         <div className="container flex flex-col items-center gap-10">
           <div className="text-center border-b pb-6">
@@ -178,7 +178,7 @@ export default function HiringPage() {
           </div>
         </div>
       </section>
-      <MinimalFooter />
+      <SiteFooter />
     </>
   );
 }

@@ -1,90 +1,59 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getCurrentUser,
-  addToCart,
-  removeFromCart,
-} from "@/lib/actions/sanity.actions";
+"use client";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
+import { addToCart, getMyCart, removeFromCart } from "@/lib/actions/account.actions";
+import type { Course } from "@/types/course";
+
+const KEY = ["cart"];
+
+const unwrap = async (p: Promise<{ success: true } | { success: false; error: string }>) => {
+  const res = await p;
+  if (!res.success) throw new Error(res.error);
+};
+
+/** The signed-in user's cart, keyed ["cart"]. */
 export const useCart = () => {
   const queryClient = useQueryClient();
+  const { status } = useSession();
 
-  // Fetch cart items
   const { data: cartItems = [], isLoading } = useQuery({
-    queryKey: ["cart"],
-    queryFn: async () => {
-      const user = await getCurrentUser();
-      return user?.cart || [];
-    },
+    queryKey: KEY,
+    enabled: status === "authenticated",
+    queryFn: () => getMyCart(),
   });
 
-  // Add to cart mutation with optimistic update
-  const addToCartMutation = useMutation({
-    mutationFn: (courseId: string) => addToCart(courseId),
-    onMutate: async (courseId: string) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
+  const settle = () => {
+    queryClient.invalidateQueries({ queryKey: KEY });
+    queryClient.invalidateQueries({ queryKey: ["account"] });
+  };
 
-      // Get previous data
-      const previousCart = queryClient.getQueryData(["cart"]);
-
-      // Optimistically update the cache
-      queryClient.setQueryData(["cart"], (old: any) => {
-        // Just increment the count - we'll refetch full data on success
-        return old;
-      });
-
-      return { previousCart };
-    },
-    onError: (error, courseId, context: any) => {
-      // Rollback on error
-      if (context?.previousCart) {
-        queryClient.setQueryData(["cart"], context.previousCart);
-      }
-    },
-    onSuccess: () => {
-      // Refetch cart to get updated data
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-    },
+  const add = useMutation({
+    mutationFn: (courseId: string) => unwrap(addToCart(courseId)),
+    onSettled: settle,
   });
 
-  // Remove from cart mutation with optimistic update
-  const removeFromCartMutation = useMutation({
-    mutationFn: (courseId: string) => removeFromCart(courseId),
-    onMutate: async (courseId: string) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
-
-      // Get previous data
-      const previousCart = queryClient.getQueryData(["cart"]);
-
-      // Optimistically update the cache
-      queryClient.setQueryData(["cart"], (old: any) => {
-        return old?.filter((item: any) => item._id !== courseId) || [];
-      });
-
-      return { previousCart };
+  const remove = useMutation({
+    mutationFn: (courseId: string) => unwrap(removeFromCart(courseId)),
+    onMutate: async (courseId) => {
+      await queryClient.cancelQueries({ queryKey: KEY });
+      const previous = queryClient.getQueryData<Course[]>(KEY);
+      queryClient.setQueryData<Course[]>(KEY, (old = []) => old.filter((c) => c._id !== courseId));
+      return { previous };
     },
-    onError: (error, courseId, context: any) => {
-      // Rollback on error
-      if (context?.previousCart) {
-        queryClient.setQueryData(["cart"], context.previousCart);
-      }
-    },
-    onSuccess: () => {
-      // Refetch cart to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-    },
+    onError: (_e, _id, ctx) => ctx?.previous && queryClient.setQueryData(KEY, ctx.previous),
+    onSettled: settle,
   });
 
   return {
     cartItems,
     cartCount: cartItems.length,
-    isLoading,
-    addToCart: addToCartMutation.mutate,
-    addToCartAsync: addToCartMutation.mutateAsync,
-    removeFromCart: removeFromCartMutation.mutate,
-    removeFromCartAsync: removeFromCartMutation.mutateAsync,
-    isAddingToCart: addToCartMutation.isPending,
-    isRemovingFromCart: removeFromCartMutation.isPending,
+    isLoading: status === "loading" || (status === "authenticated" && isLoading),
+    addToCart: add.mutate,
+    addToCartAsync: add.mutateAsync,
+    removeFromCart: remove.mutate,
+    removeFromCartAsync: remove.mutateAsync,
+    isAddingToCart: add.isPending,
+    isRemovingFromCart: remove.isPending,
   };
 };

@@ -1,249 +1,221 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { BreadcrumbUI } from "@/components/BreadcrumbUi";
+import { useSession } from "next-auth/react";
+import { ArrowRight, BookOpen, CalendarDays, Clock, GraduationCap, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Search, Clock, CheckCircle, Star, MoreVertical } from "lucide-react";
-import { getCurrentUser } from "@/lib/actions/sanity.actions";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getMyLearning } from "@/lib/actions/account.actions";
+import { categoryLabel, courseFallbackImage } from "@/lib/config";
+import type { Course } from "@/types/course";
 
-interface EnrolledCourse {
-  _id: string;
-  title: string;
-  slug: { current: string };
-  instructor: string;
-  image: string;
-  rating: number;
-  students: number;
-  status: "in-progress" | "completed";
-}
+type EnrolledCourse = Course & { enrolledAt: string };
 
-const MyLearningPage = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState<
-    "all" | "in-progress" | "completed"
-  >("all");
+const dateFmt = new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "short", year: "numeric" });
+const formatDate = (iso: string) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : dateFmt.format(d);
+};
+const lessonCount = (c: Course) => c.modules?.reduce((n, m) => n + (m.lessons ?? 0), 0) ?? 0;
 
-  // Fetch user with enrolled courses using React Query
-  const { data: user, isLoading } = useQuery({
+export default function LearningPage() {
+  const { data: session, status } = useSession();
+  const { data, isPending } = useQuery({
     queryKey: ["learning"],
-    queryFn: async () => {
-      const userData = await getCurrentUser();
-      return {
-        ...userData,
-        enrolledCourses: (userData?.enrolledCourses || []).map(
-          (course: EnrolledCourse) => ({
-            ...course,
-            status: (course.status || "in-progress") as
-              | "in-progress"
-              | "completed",
-          }),
-        ),
-      };
-    },
+    queryFn: () => getMyLearning(),
+    enabled: status === "authenticated",
   });
 
-  const enrolledCourses = user?.enrolledCourses || [];
-
-  // Filter courses
-  const filteredCourses = useMemo(
-    () =>
-      enrolledCourses
-        .filter((course: EnrolledCourse) => {
-          if (selectedFilter !== "all") {
-            return course.status === selectedFilter;
-          }
-          return true;
-        })
-        .filter(
-          (course: EnrolledCourse) =>
-            course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            course.instructor.toLowerCase().includes(searchQuery.toLowerCase()),
-        ),
-    [enrolledCourses, selectedFilter, searchQuery],
+  const loading = status === "loading" || (status === "authenticated" && isPending);
+  const courses: EnrolledCourse[] = [...(data ?? [])].sort(
+    (a, b) => new Date(b.enrolledAt).getTime() - new Date(a.enrolledAt).getTime(),
   );
+  const firstName = session?.user?.name?.trim().split(/\s+/)[0];
 
-  const stats = {
-    total: enrolledCourses.length,
-    inProgress: enrolledCourses.filter(
-      (c: EnrolledCourse) => c.status === "in-progress",
-    ).length,
-    completed: enrolledCourses.filter(
-      (c: EnrolledCourse) => c.status === "completed",
-    ).length,
-  };
+  const totalHours = courses.reduce((n, c) => n + (c.duration ?? 0), 0);
+  const totalLessons = courses.reduce((n, c) => n + lessonCount(c), 0);
+  const firstEnrolled = courses.length ? courses[courses.length - 1].enrolledAt : null;
+
+  const stats = [
+    { icon: GraduationCap, label: "Courses enrolled", value: String(courses.length) },
+    { icon: Clock, label: "Hours of content", value: totalHours ? `${totalHours}h` : "—" },
+    { icon: BookOpen, label: "Lessons available", value: totalLessons ? String(totalLessons) : "—" },
+    { icon: CalendarDays, label: "Learning since", value: firstEnrolled ? formatDate(firstEnrolled) : "—" },
+  ];
 
   return (
-    <div className="min-h-screen bg-muted/40">
-      {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 bg-background border-b border-border">
-        <BreadcrumbUI
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Academy", href: "/academy/courses" },
-            { label: "My Learning", href: "/academy/learning" },
-          ]}
-        />
-      </div>
-
-      {/* Header and Filters Container */}
-      <div className="px-6 md:px-20 py-8 bg-background">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 mb-6">
-          {/* Header */}
-          <div className="shrink-0">
-            <h1 className="text-4xl font-bold text-foreground mb-2">
-              My Learning
+    <div className="container-page py-12 lg:py-16">
+      <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">My learning</p>
+          {loading ? (
+            <Skeleton className="mt-3 h-12 w-72 bg-muted" />
+          ) : (
+            <h1 className="mt-3 text-4xl font-extrabold leading-tight sm:text-5xl">
+              Welcome back
+              {firstName ? (
+                <>
+                  , <span className="text-serif-accent text-brand">{firstName}.</span>
+                </>
+              ) : (
+                "."
+              )}
             </h1>
-            <p className="text-muted-foreground">
-              Continue learning with your enrolled courses
-            </p>
-          </div>
+          )}
+          <p className="mt-3 max-w-xl text-muted-foreground">
+            Everything you&apos;re enrolled in, in one place. Jump back in whenever you&apos;re ready.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="self-start rounded-full sm:self-auto">
+          <Link href="/academy">
+            Browse more courses <ArrowRight />
+          </Link>
+        </Button>
+      </header>
 
-          {/* Filters and Search */}
-          <div className="flex-1 lg:max-w-sm space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search courses or instructors..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-3 text-base"
-              />
-            </div>
-
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={() => setSelectedFilter("all")}
-                className={`text-sm ${
-                  selectedFilter === "all" ?
-                    "bg-emerald-600 text-white"
-                  : "bg-secondary text-foreground hover:bg-secondary/80"
-                }`}
-              >
-                All ({stats.total})
-              </Button>
-              <Button
-                onClick={() => setSelectedFilter("in-progress")}
-                className={`text-sm ${
-                  selectedFilter === "in-progress" ?
-                    "bg-emerald-600 text-white"
-                  : "bg-secondary text-foreground hover:bg-secondary/80"
-                }`}
-              >
-                In Progress ({stats.inProgress})
-              </Button>
-              <Button
-                onClick={() => setSelectedFilter("completed")}
-                className={`text-sm ${
-                  selectedFilter === "completed" ?
-                    "bg-emerald-600 text-white"
-                  : "bg-secondary text-foreground hover:bg-secondary/80"
-                }`}
-              >
-                Completed ({stats.completed})
-              </Button>
-            </div>
+      <dl className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {stats.map(({ icon: Icon, label, value }) => (
+          <div key={label} className="rounded-2xl border border-border bg-card p-5">
+            <span className="grid size-10 place-items-center rounded-full bg-secondary text-primary dark:text-brand">
+              <Icon className="size-4" />
+            </span>
+            <dt className="mt-4 text-sm text-muted-foreground">{label}</dt>
+            <dd className="mt-1 text-2xl font-extrabold tracking-tight">
+              {loading ? <Skeleton className="h-8 w-16 bg-muted" /> : value}
+            </dd>
           </div>
+        ))}
+      </dl>
+
+      <section className="mt-14">
+        <h2 className="text-2xl font-extrabold">Your courses</h2>
+        <div className="mt-6">
+          {loading ? (
+            <LearningSkeleton />
+          ) : courses.length === 0 ? (
+            <EmptyLearning />
+          ) : (
+            <ul className="grid gap-4">
+              {courses.map((course, i) => (
+                <EnrolledCourseRow key={course._id} course={course} priority={i < 2} />
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function EnrolledCourseRow({ course, priority }: { course: EnrolledCourse; priority?: boolean }) {
+  const href = `/academy/courses/${course.slug.current}`;
+  const lessons = lessonCount(course);
+  const enrolled = formatDate(course.enrolledAt);
+
+  return (
+    <li className="group flex flex-col gap-5 rounded-2xl border border-border bg-card p-4 transition-shadow hover:shadow-[0_18px_40px_-22px_rgb(11_42_111/0.35)] sm:flex-row sm:items-center sm:p-5">
+      <Link
+        href={href}
+        className="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-xl bg-muted sm:w-56"
+      >
+        <Image
+          src={course.image || courseFallbackImage(course.category)}
+          alt=""
+          fill
+          priority={priority}
+          sizes="(min-width: 640px) 224px, 100vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+        />
+      </Link>
+
+      <div className="min-w-0 flex-1">
+        {course.category && (
+          <p className="text-xs font-semibold uppercase tracking-wider text-gold">
+            {categoryLabel(course.category)}
+          </p>
+        )}
+        <Link href={href}>
+          <h3 className="mt-1 line-clamp-2 text-lg font-bold leading-snug group-hover:text-brand">
+            {course.title}
+          </h3>
+        </Link>
+        {course.instructor && (
+          <p className="mt-1 text-sm text-muted-foreground">by {course.instructor}</p>
+        )}
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          {enrolled && (
+            <span className="inline-flex items-center gap-1.5">
+              <CalendarDays className="size-3.5" /> Enrolled {enrolled}
+            </span>
+          )}
+          {course.duration ? (
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="size-3.5" /> {course.duration}h
+            </span>
+          ) : null}
+          {lessons > 0 && (
+            <span className="inline-flex items-center gap-1.5">
+              <BookOpen className="size-3.5" /> {lessons} lessons
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Course Grid */}
-      <div className="px-6 md:px-20 py-8">
-        {isLoading ?
-          <div className="bg-card rounded-lg p-12 text-center">
-            <p className="text-muted-foreground">Loading your courses...</p>
-          </div>
-        : filteredCourses.length === 0 ?
-          <div className="bg-card rounded-lg p-12 text-center">
-            <p className="text-muted-foreground text-lg mb-4">
-              {enrolledCourses.length === 0 ?
-                "You haven't enrolled in any courses yet"
-              : "No courses found matching your criteria"}
-            </p>
-            <Link href="/academy/courses">
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
-                Browse Courses
-              </Button>
-            </Link>
-          </div>
-        : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCourses.map((course: EnrolledCourse) => (
-              <Link
-                key={course._id}
-                href={`/academy/courses/${course.slug.current}`}
-                className="group"
-              >
-                <div className="bg-card rounded-lg overflow-hidden border border-border hover:border-emerald-300 hover:shadow-lg transition-all duration-300">
-                  {/* Thumbnail */}
-                  <div className="relative w-full h-40 bg-secondary overflow-hidden">
-                    <Image
-                      src={course.image || "/academy.avif"}
-                      alt={course.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex items-end">
-                      <div className="p-3 w-full">
-                        <Badge
-                          className={`${
-                            course.status === "completed" ?
-                              "bg-blue-600 hover:bg-blue-700"
-                            : "bg-emerald-600 hover:bg-emerald-700"
-                          } text-white`}
-                        >
-                          {course.status === "completed" ?
-                            <>
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Completed
-                            </>
-                          : <>
-                              <Clock className="w-3 h-3 mr-1" />
-                              In Progress
-                            </>
-                          }
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
+      <Button asChild className="w-full rounded-full sm:w-auto">
+        <Link href={href}>
+          <PlayCircle /> Continue
+        </Link>
+      </Button>
+    </li>
+  );
+}
 
-                  {/* Content */}
-                  <div className="p-4 space-y-3">
-                    {/* Title */}
-                    <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-emerald-600 transition-colors">
-                      {course.title}
-                    </h3>
-
-                    {/* Instructor & Rating */}
-                    <div className="flex items-center justify-between text-sm">
-                      <p className="text-muted-foreground">{course.instructor}</p>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold text-foreground">
-                          {course.rating}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Action Button */}
-                    <Button className="w-full mt-2 bg-secondary text-foreground hover:bg-secondary/80">
-                      Continue Learning
-                    </Button>
-                  </div>
-                </div>
-              </Link>
-            ))}
+function LearningSkeleton() {
+  return (
+    <div className="grid gap-4" aria-busy aria-label="Loading your courses">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:p-5"
+        >
+          <Skeleton className="aspect-[16/10] w-full rounded-xl bg-muted sm:w-56" />
+          <div className="flex-1 space-y-3">
+            <Skeleton className="h-3 w-24 bg-muted" />
+            <Skeleton className="h-5 w-3/4 bg-muted" />
+            <Skeleton className="h-4 w-1/3 bg-muted" />
+            <Skeleton className="h-3 w-1/2 bg-muted" />
           </div>
-        }
+          <Skeleton className="h-9 w-full rounded-full bg-muted sm:w-28" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyLearning() {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-border bg-card px-6 py-16 text-center sm:py-20">
+      <div aria-hidden className="bg-grid mask-fade-b pointer-events-none absolute inset-0 opacity-50" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 left-1/2 size-80 -translate-x-1/2 rounded-full bg-gold/15 blur-3xl"
+      />
+      <div className="relative mx-auto max-w-md">
+        <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-secondary text-primary dark:text-brand">
+          <GraduationCap className="size-7" />
+        </span>
+        <h2 className="mt-6 text-2xl font-extrabold sm:text-3xl">No courses yet</h2>
+        <p className="mt-3 text-muted-foreground">
+          Once you enrol in a course it will show up here, ready for you to start learning.
+        </p>
+        <Button asChild size="lg" className="mt-8 h-12 rounded-full px-7 text-base">
+          <Link href="/academy">
+            Browse courses <ArrowRight />
+          </Link>
+        </Button>
       </div>
     </div>
   );
-};
-
-export default MyLearningPage;
+}

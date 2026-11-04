@@ -2,9 +2,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function CourseCardSkeleton() {
   return (
-    <div className="border border-border rounded-lg overflow-hidden bg-card">
+    <div className="rounded-2xl border border-border overflow-hidden bg-card">
       {/* Image skeleton */}
-      <Skeleton className="w-full h-48" />
+      <Skeleton className="w-full aspect-[16/10] rounded-none" />
 
       {/* Content */}
       <div className="p-4 space-y-4">
@@ -38,7 +38,7 @@ export function CourseCardSkeleton() {
 
 export function CourseListSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
         <CourseCardSkeleton key={i} />
       ))}

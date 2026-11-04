@@ -1,286 +1,100 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { BreadcrumbUI } from "@/components/BreadcrumbUi";
+import { ArrowRight, Heart } from "lucide-react";
+import { CourseGrid } from "@/components/course/course-grid";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Trash2, ShoppingCart } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useWishlist } from "@/hooks/useWishlist";
-import { useCart } from "@/hooks/useCart";
-import { toast } from "sonner";
 
-interface WishlistItem {
-  _id: string;
-  title: string;
-  slug: { current: string };
-  instructor: string;
-  price: number;
-  rating: number;
-  students: number;
-  image: string;
-  category: string;
-  level: string;
-  description: string;
-}
-
-const WishlistPage = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [togglingWishlist, setTogglingWishlist] = useState<string | null>(null);
-  const [addingToCart, setAddingToCart] = useState<string | null>(null);
-  const [addingAllToCart, setAddingAllToCart] = useState(false);
-  const { wishlistItems, isLoading, removeFromWishlist } = useWishlist();
-  const { addToCartAsync } = useCart();
-
-  const filteredItems = wishlistItems.filter(
-    (item: WishlistItem) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.instructor.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  const handleRemoveFromWishlist = async (courseId: string) => {
-    setTogglingWishlist(courseId);
-    try {
-      await removeFromWishlist(courseId);
-      toast.success("Removed from wishlist!");
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to remove from wishlist");
-    } finally {
-      setTogglingWishlist(null);
-    }
-  };
-
-  const handleAddToCart = async (courseId: string) => {
-    setAddingToCart(courseId);
-    try {
-      await addToCartAsync(courseId);
-      toast.success("Course added to cart!");
-    } catch (error: any) {
-      console.error("Error adding to cart:", error);
-      toast.error(error?.message || "Failed to add course to cart");
-    } finally {
-      setAddingToCart(null);
-    }
-  };
-
-  const handleAddAllToCart = async () => {
-    if (wishlistItems.length === 0) return;
-
-    setAddingAllToCart(true);
-    let successCount = 0;
-    let errorCount = 0;
-
-    try {
-      for (const item of wishlistItems) {
-        try {
-          await addToCartAsync(item._id);
-          successCount++;
-        } catch (error) {
-          console.error(`Failed to add ${item.title}:`, error);
-          errorCount++;
-        }
-      }
-
-      if (successCount > 0) {
-        toast.success(
-          `Added ${successCount} course${successCount > 1 ? "s" : ""} to cart!`,
-        );
-      }
-      if (errorCount > 0) {
-        toast.error(
-          `Failed to add ${errorCount} course${errorCount > 1 ? "s" : ""}`,
-        );
-      }
-    } finally {
-      setAddingAllToCart(false);
-    }
-  };
-
-  const totalValue = wishlistItems.reduce(
-    (sum: number, item: WishlistItem) => sum + item.price,
-    0,
-  );
-  const savings = wishlistItems.reduce(
-    (sum: number, item: WishlistItem) => sum + (item.price * 1.5 - item.price),
-    0,
-  );
+export default function WishlistPage() {
+  const { wishlistItems, isLoading } = useWishlist();
+  // Optimistic placeholders (only an _id) are filtered out until the refetch fills them in.
+  const courses = wishlistItems.filter((c) => c?.slug?.current);
+  const count = courses.length;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 border-b border-border">
-        <BreadcrumbUI
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Academy", href: "/academy/courses" },
-            { label: "Wishlist", href: "/academy/wishlist" },
-          ]}
-        />
-      </div>
-
-      {/* Header */}
-      <div className="px-6 md:px-20 py-8 pb-0">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Wishlist</h1>
-        <p className="text-muted-foreground">
-          Manage your wishlist items and add them to your cart when ready.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 px-6 md:px-20 py-8">
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          {/* Search */}
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search wishlist..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-3"
-              />
-            </div>
-          </div>
-
-          {isLoading ?
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground">Loading your wishlist...</p>
-            </div>
-          : filteredItems.length === 0 ?
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground text-lg mb-4">
-                {searchQuery ?
-                  "No courses found in your wishlist"
-                : "Your wishlist is empty"}
-              </p>
-              <Link href="/academy/courses">
-                <Button className="bg-emerald-600 hover:bg-emerald-700">
-                  Browse Courses
-                </Button>
-              </Link>
-            </div>
-          : <div className="space-y-3">
-              {filteredItems.map((item: WishlistItem) => (
-                <div
-                  key={item._id}
-                  className="border border-border rounded-lg p-4 hover:border-foreground/20 transition-colors"
-                >
-                  <div className="flex gap-4">
-                    {/* Thumbnail */}
-                    <Link
-                      href={`/academy/courses/${item.slug?.current || item._id}`}
-                    >
-                      <div className="relative w-24 h-24 rounded overflow-hidden bg-secondary shrink-0 hover:opacity-80 transition-opacity">
-                        <Image
-                          src={item.image || "/academy.avif"}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </Link>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <Link
-                        href={`/academy/courses/${item.slug?.current || item._id}`}
-                      >
-                        <h3 className="font-semibold text-foreground hover:text-emerald-600 transition-colors line-clamp-2 mb-1">
-                          {item.title}
-                        </h3>
-                      </Link>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {item.instructor}
-                      </p>
-                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <span className="w-3 h-3" />
-                          {item.rating}
-                        </span>
-                        <span>{item.students.toLocaleString()} students</span>
-                        <span>{item.level}</span>
-                      </div>
-                    </div>
-
-                    {/* Price & Actions */}
-                    <div className="flex flex-col items-end justify-between gap-2">
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-foreground">
-                          ₦{item.price.toLocaleString()}
-                        </p>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleRemoveFromWishlist(item._id)}
-                          disabled={togglingWishlist === item._id}
-                          className="p-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                          title="Remove from wishlist"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <Button
-                          onClick={() => handleAddToCart(item._id)}
-                          disabled={addingToCart === item._id}
-                          size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-1" />
-                          {addingToCart === item._id ? "Adding..." : "Add"}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          }
+    <div className="container-page py-12 lg:py-16">
+      <header className="flex flex-col gap-6 border-b border-border pb-10 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Wishlist</p>
+          <h1 className="mt-3 text-4xl font-extrabold leading-tight sm:text-5xl">
+            Saved for <span className="text-serif-accent text-brand">later.</span>
+          </h1>
+          <p className="mt-3 max-w-xl text-muted-foreground">
+            Courses you&apos;ve bookmarked. Add them to your cart when you&apos;re ready to start.
+          </p>
         </div>
-
-        {/* Sidebar Summary */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-24 bg-muted/40 border border-border rounded-lg p-6">
-            <h3 className="font-semibold text-foreground mb-4">
-              Wishlist Summary
-            </h3>
-
-            <div className="space-y-4 pb-4 border-b border-border mb-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Items</span>
-                <span className="font-semibold text-foreground">
-                  {wishlistItems.length}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total value</span>
-                <span className="font-semibold text-foreground">
-                  ₦{totalValue.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">You save</span>
-                <span className="font-semibold text-emerald-600">
-                  ₦{savings.toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            {wishlistItems.length > 0 && (
-              <Button
-                onClick={handleAddAllToCart}
-                disabled={addingAllToCart}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
-              >
-                {addingAllToCart ? "Adding..." : "Add All to Cart"}
-              </Button>
-            )}
+        {!isLoading && count > 0 && (
+          <div className="flex items-center gap-3 self-start rounded-full border border-border bg-card py-2 pl-2 pr-5 sm:self-auto">
+            <span className="grid size-9 place-items-center rounded-full bg-rose-500/15 text-rose-500">
+              <Heart className="size-4 fill-current" />
+            </span>
+            <span className="text-sm">
+              <span className="font-bold">{count}</span>{" "}
+              <span className="text-muted-foreground">saved {count === 1 ? "course" : "courses"}</span>
+            </span>
           </div>
-        </div>
+        )}
+      </header>
+
+      <div className="mt-10">
+        {isLoading ? (
+          <WishlistSkeleton />
+        ) : count === 0 ? (
+          <EmptyWishlist />
+        ) : (
+          <CourseGrid courses={courses} priorityCount={3} />
+        )}
       </div>
     </div>
   );
-};
+}
 
-export default WishlistPage;
+function WishlistSkeleton() {
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy aria-label="Loading wishlist">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="overflow-hidden rounded-2xl border border-border bg-card">
+          <Skeleton className="aspect-[16/10] w-full rounded-none bg-muted" />
+          <div className="space-y-3 p-5">
+            <Skeleton className="h-5 w-4/5 bg-muted" />
+            <Skeleton className="h-4 w-1/3 bg-muted" />
+            <Skeleton className="h-3 w-1/2 bg-muted" />
+            <div className="flex items-center justify-between pt-4">
+              <Skeleton className="h-6 w-20 bg-muted" />
+              <Skeleton className="h-8 w-28 rounded-full bg-muted" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyWishlist() {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-border bg-card px-6 py-16 text-center sm:py-20">
+      <div aria-hidden className="bg-grid mask-fade-b pointer-events-none absolute inset-0 opacity-50" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 left-1/2 size-80 -translate-x-1/2 rounded-full bg-brand/10 blur-3xl"
+      />
+      <div className="relative mx-auto max-w-md">
+        <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-secondary text-primary dark:text-brand">
+          <Heart className="size-7" />
+        </span>
+        <h2 className="mt-6 text-2xl font-extrabold sm:text-3xl">Your wishlist is empty</h2>
+        <p className="mt-3 text-muted-foreground">
+          Tap the heart on any course to save it here, so you can compare and come back to it
+          anytime.
+        </p>
+        <Button asChild size="lg" className="mt-8 h-12 rounded-full px-7 text-base">
+          <Link href="/academy">
+            Browse courses <ArrowRight />
+          </Link>
+        </Button>
+      </div>
+    </div>
+  );
+}

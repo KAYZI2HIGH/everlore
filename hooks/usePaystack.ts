@@ -1,164 +1,63 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  enrollUserInCourses,
-  verifyPaystackPayment,
-} from "@/lib/actions/sanity.actions";
+import { completeCheckout, startCheckout } from "@/lib/actions/checkout.actions";
 
-interface PaymentConfig {
-  email: string;
-  amount: number;
-  courseIds: string[];
-}
+type PaystackPopCtor = typeof import("@paystack/inline-js").default;
 
-export const usePaystack = (queryClientOverride?: any) => {
-  const defaultQueryClient = useQueryClient();
-  const queryClient = queryClientOverride || defaultQueryClient;
+/**
+ * Pays for the signed-in user's cart. The server prices the cart and creates
+ * the reference; after Paystack reports success the server verifies it again
+ * before enrolling. Resolves with the purchased course ids.
+ */
+export function usePaystack() {
+  const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [PaystackPop, setPaystackPop] = useState<any>(null);
+  const popRef = useRef<PaystackPopCtor | null>(null);
 
-  // Lazy load Paystack SDK on client side only
   useEffect(() => {
-    const loadPaystack = async () => {
-      try {
-        const PaystackModule = await import("@paystack/inline-js");
-        setPaystackPop(() => PaystackModule.default);
-      } catch (error) {
-        console.error("❌ Failed to load Paystack SDK:", error);
-      }
-    };
-    loadPaystack();
+    import("@paystack/inline-js")
+      .then((m) => (popRef.current = m.default))
+      .catch((e) => console.error("Failed to load Paystack", e));
   }, []);
 
-  const handlePaymentSuccess = async (
-    reference: string,
-    courseIds: string[],
-  ): Promise<void> => {
-    try {
-      console.log(
-        "🎯 Processing successful payment with reference:",
-        reference,
-      );
-
-      // Verify payment on backend
-      console.log("🔍 Verifying payment with Paystack...");
-      const verifyResult = await verifyPaystackPayment(reference);
-
-      console.log("✓ Verification result:", verifyResult);
-
-      if (!verifyResult?.success) {
-        const error = verifyResult?.error || "Payment verification failed";
-        console.error("❌ Verification failed:", error);
-        throw new Error(error);
-      }
-
-      console.log("✓ Payment verified successfully!");
-      console.log("📝 Enrolling user in courses:", courseIds);
-
-      // Enroll user in courses
-      const enrollResult = await enrollUserInCourses(courseIds);
-
-      console.log("✓ Enrollment result:", enrollResult);
-
-      if (!enrollResult?.success) {
-        const error = enrollResult?.error || "Enrollment failed";
-        console.error("❌ Enrollment failed:", error);
-        throw new Error(error);
-      }
-
-      console.log("✓ User enrolled successfully!");
-
-      // Refetch relevant queries after successful enrollment
-      console.log("🔄 Refetching queries...");
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: ["user"] }),
-        queryClient.refetchQueries({ queryKey: ["courses"] }),
-        queryClient.refetchQueries({ queryKey: ["course"] }),
-        queryClient.refetchQueries({ queryKey: ["cart"] }),
-        queryClient.refetchQueries({ queryKey: ["learning"] }),
-      ]);
-      console.log("✓ Queries refetched successfully!");
-
-      return Promise.resolve();
-    } catch (error) {
-      console.error("❌ Error in handlePaymentSuccess:", error);
-      return Promise.reject(error);
-    }
-  };
-
-  const initializePayment = async (config: PaymentConfig): Promise<void> => {
-    const { email, amount, courseIds } = config;
-
-    if (!email || amount <= 0 || courseIds.length === 0) {
-      throw new Error("Invalid payment configuration");
-    }
-
-    if (!PaystackPop) {
-      throw new Error("Paystack SDK not loaded yet. Please try again.");
-    }
+  const checkout = async (): Promise<string[]> => {
+    const key = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+    if (!key) throw new Error("Payments are not configured yet.");
+    if (!popRef.current) throw new Error("Payment window is still loading. Try again.");
 
     setIsProcessing(true);
-
     try {
-      console.log("💳 Setting up Paystack payment with SDK:", {
-        email,
-        amount: Math.round(amount * 100),
-        courseIds,
+      const start = await startCheckout();
+      if (!start.success) throw new Error(start.error);
+
+      const reference = await new Promise<string>((resolve, reject) => {
+        const pop = new popRef.current!();
+        pop.newTransaction({
+          key,
+          email: start.email,
+          amount: start.amount,
+          currency: start.currency,
+          ref: start.reference,
+          onSuccess: (tx) => resolve(tx?.reference || start.reference),
+          onCancel: () => reject(new Error("Payment cancelled")),
+        });
       });
 
-      // Generate a unique reference
-      const reference = `ref_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const done = await completeCheckout(reference);
+      if (!done.success) throw new Error(done.error);
 
-      return new Promise<void>((resolve, reject) => {
-        try {
-          const paystack = new PaystackPop();
-
-          console.log("🖼️ Opening Paystack payment modal");
-
-          paystack.newTransaction({
-            key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
-            email,
-            amount: Math.round(amount * 100),
-            ref: reference,
-            onSuccess: async (transaction: any) => {
-              console.log("✓ Paystack onSuccess callback fired!");
-              console.log("✓ Transaction:", transaction);
-
-              const txRef = transaction?.reference || reference;
-              console.log("📝 Transaction reference:", txRef);
-
-              try {
-                await handlePaymentSuccess(txRef, courseIds);
-                console.log("✓ Payment flow completed successfully!");
-                setIsProcessing(false);
-                resolve();
-              } catch (error) {
-                console.error("❌ Payment flow failed:", error);
-                setIsProcessing(false);
-                reject(error);
-              }
-            },
-            onCancel: () => {
-              console.log("⚠️ Payment cancelled by user");
-              setIsProcessing(false);
-              reject(new Error("Payment cancelled"));
-            },
-          });
-        } catch (error) {
-          console.error("❌ Error setting up Paystack:", error);
-          setIsProcessing(false);
-          reject(error instanceof Error ? error : new Error(String(error)));
-        }
-      });
-    } catch (error) {
-      console.error("❌ Error in initializePayment:", error);
+      await Promise.all(
+        ["cart", "account", "learning"].map((k) =>
+          queryClient.invalidateQueries({ queryKey: [k] }),
+        ),
+      );
+      return done.courseIds;
+    } finally {
       setIsProcessing(false);
-      throw error;
     }
   };
 
-  return {
-    initializePayment,
-    isProcessing,
-  };
-};
+  return { checkout, isProcessing };
+}

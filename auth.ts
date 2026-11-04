@@ -1,10 +1,12 @@
-import NextAuth from "next-auth"
-import Google from "next-auth/providers/google"
-import Credentials from "next-auth/providers/credentials"
-import bcrypt from "bcryptjs"
-import { client } from "@/lib/sanity"
+import NextAuth from "next-auth";
+import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { authConfig } from "@/auth.config";
+import { findUserByEmail, upsertOAuthUser } from "@/lib/db/users";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -17,94 +19,51 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials")
-        }
+        const email = String(credentials?.email ?? "").trim().toLowerCase();
+        const password = String(credentials?.password ?? "");
+        if (!email || !password) return null;
 
-        const user = await client.fetch(
-          `*[_type == "user" && email == $email][0]`,
-          { email: credentials.email }
-        )
+        const user = await findUserByEmail(email);
+        if (!user?.passwordHash) return null;
 
-        if (!user) {
-          throw new Error("User not found")
-        }
+        const ok = await bcrypt.compare(password, user.passwordHash);
+        if (!ok) return null;
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        )
-
-        if (!isPasswordValid) {
-          throw new Error("Invalid password")
-        }
-
-        return {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        }
+        return { id: user.id, email: user.email, name: user.name, image: user.image };
       },
     }),
   ],
   callbacks: {
+    ...authConfig.callbacks,
     async signIn({ user, account }) {
-      // Handle OAuth sign-in
       if (account?.provider === "google") {
-        // Check if user exists, if not create
-        const existingUser = await client.fetch(
-          `*[_type == "user" && email == $email][0]`,
-          { email: user.email }
-        )
-
-        if (!existingUser) {
-          // Create new user
-          await client.create({
-            _type: "user",
-            email: user.email,
-            name: user.name,
-            image: user.image,
-            googleId: account.providerAccountId,
-            enrolledCourses: [],
-            wishlist: [],
-            createdAt: new Date().toISOString(),
-          })
+        if (!user.email) return false;
+        await upsertOAuthUser({
+          email: user.email,
+          name: user.name ?? user.email.split("@")[0],
+          image: user.image ?? null,
+          googleId: account.providerAccountId,
+        });
+      }
+      return true;
+    },
+    async jwt({ token, user, trigger, session }) {
+      // On sign-in, swap whatever id the provider gave us for our own user id.
+      if (user?.email) {
+        const dbUser = await findUserByEmail(user.email);
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.email = dbUser.email;
+          token.name = dbUser.name;
+          token.picture = dbUser.image;
+          token.role = dbUser.role;
         }
       }
-
-      return true
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.email = user.email
+      if (trigger === "update" && session) {
+        if (typeof session.name === "string") token.name = session.name;
+        if (typeof session.image === "string") token.picture = session.image;
       }
-      return token
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string
-        session.user.email = token.email as string
-      }
-      return session
+      return token;
     },
   },
-  pages: {
-    signIn: "/sign-in",
-    newUser: "/sign-up",
-    error: "/sign-in",
-  },
-  events: {
-    async signOut() {
-      // Handle any cleanup if needed
-    },
-  },
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  jwt: {
-    maxAge: 30 * 24 * 60 * 60,
-  },
-})
+});

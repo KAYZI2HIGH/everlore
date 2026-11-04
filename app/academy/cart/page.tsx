@@ -1,330 +1,123 @@
 "use client";
 
-import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BreadcrumbUI } from "@/components/BreadcrumbUi";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Trash2, Heart } from "lucide-react";
-import { useCart } from "@/hooks/useCart";
-import { useWishlist } from "@/hooks/useWishlist";
-import { usePaystack } from "@/hooks/usePaystack";
-import { getCurrentUser } from "@/lib/actions/sanity.actions";
 import { toast } from "sonner";
+import { ArrowRight, Loader2, Lock, ShieldCheck, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCart } from "@/hooks/useCart";
+import { usePaystack } from "@/hooks/usePaystack";
+import { categoryLabel, formatPrice } from "@/lib/config";
 
-interface CartItem {
-  _id: string;
-  title: string;
-  instructor: string;
-  image: string;
-  price: number;
-  rating: number;
-  level: string;
-  category: string;
-  students: number;
-  description: string;
-}
-
-const CartPage = () => {
+export default function CartPage() {
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const [couponCode, setCouponCode] = useState("");
-  const [togglingWishlist, setTogglingWishlist] = useState<string | null>(null);
-  const [removingFromCart, setRemovingFromCart] = useState<string | null>(null);
-  const { cartItems, isLoading, removeFromCart, removeFromCartAsync } =
-    useCart();
-  const { isInWishlist, toggleWishlistAsync } = useWishlist();
-  const { initializePayment, isProcessing } = usePaystack(queryClient);
+  const { cartItems, isLoading, removeFromCart, isRemovingFromCart } = useCart();
+  const { checkout, isProcessing } = usePaystack();
+  const subtotal = cartItems.reduce((sum, c) => sum + c.price, 0);
 
-  // Fetch user data with React Query
-  const { data: user } = useQuery({
-    queryKey: ["user"],
-    queryFn: () => getCurrentUser(),
-  });
-
-  const userEmail = user?.email || null;
-
-  const handleRemoveFromCart = async (courseId: string) => {
-    setRemovingFromCart(courseId);
+  const pay = async () => {
     try {
-      await removeFromCartAsync(courseId);
-    } finally {
-      setRemovingFromCart(null);
-    }
-  };
-
-  const handleToggleWishlist = async (courseId: string) => {
-    setTogglingWishlist(courseId);
-    try {
-      await toggleWishlistAsync(courseId);
-    } finally {
-      setTogglingWishlist(null);
-    }
-  };
-
-  const handleCheckout = async () => {
-    if (!userEmail) {
-      toast.error("Please log in to checkout");
-      return;
-    }
-
-    if (cartItems.length === 0) {
-      toast.error("Your cart is empty");
-      return;
-    }
-
-    try {
-      const courseIds = cartItems.map((item: CartItem) => item._id);
-      const total = cartItems.reduce(
-        (sum: number, item: CartItem) => sum + item.price,
-        0,
-      );
-
-      console.log("Starting checkout with:", { courseIds, total, userEmail });
-
-      await initializePayment({
-        email: userEmail,
-        amount: total,
-        courseIds,
-      });
-
-      console.log("Payment completed successfully");
-      toast.success("Payment successful! Courses added to your learning");
+      const ids = await checkout();
+      toast.success(`Payment confirmed — you're enrolled in ${ids.length} course${ids.length === 1 ? "" : "s"}!`);
       router.push("/academy/learning");
-    } catch (error: any) {
-      console.error("Payment error:", error);
-      toast.error(error?.message || "Payment failed");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Payment failed";
+      if (msg === "Payment cancelled") toast.message("Payment cancelled");
+      else toast.error(msg);
     }
   };
-
-  const calculateTotals = () => {
-    const originalTotal = cartItems.reduce((sum: number, item: CartItem) => {
-      // Assuming original price is 1.5x the current price
-      return sum + item.price * 1.5;
-    }, 0);
-    const currentTotal = cartItems.reduce(
-      (sum: number, item: CartItem) => sum + item.price,
-      0,
-    );
-    const discount = originalTotal - currentTotal;
-    const discountPercent = Math.round((discount / originalTotal) * 100);
-
-    return { originalTotal, currentTotal, discount, discountPercent };
-  };
-
-  const { originalTotal, currentTotal, discount, discountPercent } =
-    calculateTotals();
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Breadcrumb */}
-      <div className="px-6 md:px-20 py-4 border-b border-border">
-        <BreadcrumbUI
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Cart", href: "/academy/cart" },
-          ]}
-        />
-      </div>
+    <div className="container-page py-12 lg:py-16">
+      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Checkout</p>
+      <h1 className="mt-3 text-4xl font-extrabold">Your cart</h1>
 
-      {/* Header Section */}
-      <div className="px-6 md:px-20 py-12 border-b border-border">
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold text-foreground">Shopping Cart</h1>
-          <p className="text-muted-foreground text-base">
-            {cartItems.length} course{cartItems.length !== 1 ? "s" : ""} in your
-            cart
-          </p>
+      {isLoading ? (
+        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]">
+          <div className="space-y-4">
+            {[0, 1].map((i) => (
+              <Skeleton key={i} className="h-32 rounded-2xl" />
+            ))}
+          </div>
+          <Skeleton className="h-72 rounded-3xl" />
         </div>
-      </div>
-
-      {/* Cart Content */}
-      <div className="px-6 md:px-20 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-6">
-            {isLoading ?
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">Loading cart...</p>
-              </div>
-            : cartItems.length === 0 ?
-              <div className="flex flex-col items-center justify-center py-16 gap-6">
-                <div className="relative w-64 h-48">
-                  <Image
-                    src="/empty-cart.svg"
-                    alt="Empty cart illustration"
-                    fill
-                    className="object-contain"
-                    priority
-                  />
-                </div>
-                <div className="text-center space-y-3">
-                  <p className="text-foreground text-lg font-semibold">
-                    Your cart is empty
-                  </p>
-                  <p className="text-muted-foreground text-sm max-w-md">
-                    Start exploring our courses and add them to your cart to get
-                    started on your learning journey.
-                  </p>
-                </div>
-                <Link href="/academy/courses">
-                  <Button className="bg-emerald-600 hover:bg-emerald-700">
-                    Continue Shopping
-                  </Button>
-                </Link>
-              </div>
-            : cartItems.map((item: CartItem) => (
-                <div
-                  key={item._id}
-                  className="bg-card rounded-lg p-6 border border-border hover:border-foreground/20 transition-colors"
+      ) : cartItems.length === 0 ? (
+        <div className="mt-10 flex flex-col items-center rounded-3xl border border-dashed border-border py-20 text-center">
+          <Image src="/empty-cart.svg" alt="" width={200} height={150} />
+          <h2 className="mt-6 text-2xl font-bold">Your cart is empty</h2>
+          <p className="mt-2 max-w-sm text-muted-foreground">
+            Find a course that fits your goals and add it here to check out.
+          </p>
+          <Button asChild size="lg" className="mt-8 rounded-full">
+            <Link href="/academy">
+              Browse courses <ArrowRight />
+            </Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-10 grid items-start gap-8 lg:grid-cols-[1fr_380px]">
+          <ul className="space-y-4">
+            {cartItems.map((c) => (
+              <li key={c._id} className="flex gap-4 rounded-2xl border border-border bg-card p-4 sm:gap-5">
+                <Link
+                  href={`/academy/courses/${c.slug.current}`}
+                  className="relative aspect-[16/10] w-28 shrink-0 overflow-hidden rounded-xl bg-muted sm:w-44"
                 >
-                  <div className="flex gap-4">
-                    {/* Thumbnail */}
-                    <div className="relative w-32 h-24 shrink-0 rounded-lg overflow-hidden bg-secondary">
-                      <Image
-                        src={item.image || "/academy.avif"}
-                        alt={item.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <Link href={`/academy/courses`}>
-                        <h3 className="font-semibold text-foreground mb-1 line-clamp-2 hover:text-emerald-600 transition-colors">
-                          {item.title}
-                        </h3>
-                      </Link>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        By {item.instructor}
-                      </p>
-
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <Badge
-                          variant="outline"
-                          className="text-xs bg-secondary"
-                        >
-                          📚 {item.category}
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="text-xs bg-secondary"
-                        >
-                          {item.level}
-                        </Badge>
-                      </div>
-
-                      {/* Stats */}
-                      <div className="flex gap-3 text-xs text-muted-foreground mb-3">
-                        <span>⭐ {item.rating}</span>
-                        <span>👥 {item.students} students</span>
-                      </div>
-
-                      {/* Price & Actions */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm line-through text-muted-foreground">
-                            ₦{(item.price * 1.5).toLocaleString()}
-                          </span>
-                          <span className="text-lg font-bold text-foreground">
-                            ₦{item.price.toLocaleString()}
-                          </span>
-                        </div>
-
-                        <div className="flex gap-4 text-sm">
-                          <button
-                            onClick={() => handleRemoveFromCart(item._id)}
-                            disabled={removingFromCart === item._id}
-                            className="text-muted-foreground hover:text-red-600 font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            {removingFromCart === item._id ?
-                              "Removing..."
-                            : "Remove"}
-                          </button>
-                          <button
-                            onClick={() => handleToggleWishlist(item._id)}
-                            disabled={togglingWishlist === item._id}
-                            className="text-muted-foreground hover:text-red-600 font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
-                          >
-                            <Heart
-                              className={`w-4 h-4 transition-colors ${
-                                isInWishlist(item._id) ?
-                                  "fill-red-500 text-red-500"
-                                : ""
-                              }`}
-                            />
-                            {isInWishlist(item._id) ?
-                              "Remove from wishlist"
-                            : "Wishlist"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                  <Image src={c.image} alt="" fill sizes="176px" className="object-cover" />
+                </Link>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <p className="text-xs font-medium text-muted-foreground">{categoryLabel(c.category)}</p>
+                  <Link href={`/academy/courses/${c.slug.current}`} className="mt-0.5 line-clamp-2 font-bold hover:text-brand">
+                    {c.title}
+                  </Link>
+                  {c.instructor && <p className="mt-1 text-sm text-muted-foreground">by {c.instructor}</p>}
+                  <div className="mt-auto flex items-center justify-between pt-3">
+                    <p className="text-lg font-extrabold">{formatPrice(c.price)}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full text-muted-foreground hover:text-destructive"
+                      onClick={() =>
+                        removeFromCart(c._id, {
+                          onSuccess: () => toast.success("Removed from cart"),
+                          onError: (e) => toast.error(e.message),
+                        })
+                      }
+                      disabled={isRemovingFromCart || isProcessing}
+                    >
+                      <Trash2 /> Remove
+                    </Button>
                   </div>
                 </div>
-              ))
-            }
-          </div>
+              </li>
+            ))}
+          </ul>
 
-          {/* Summary */}
-          <div className="lg:col-span-1">
-            <div className="bg-card rounded-lg p-6 border border-border sticky top-24">
-              <h2 className="font-semibold text-foreground mb-6">Total</h2>
-
-              <div className="space-y-4 mb-6 pb-6 border-b border-border">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Original price</span>
-                  <span className="text-foreground line-through">
-                    ₦{originalTotal.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Discount offer</span>
-                  <span className="text-red-600 font-semibold">
-                    -₦{discount.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Discount percent</span>
-                  <span className="text-foreground font-semibold">
-                    {discountPercent}%
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Total course</span>
-                  <span className="text-foreground font-semibold">
-                    {cartItems.length}
-                  </span>
-                </div>
+          <aside className="rounded-3xl border border-border bg-card p-6 lg:sticky lg:top-24">
+            <h2 className="text-lg font-bold">Order summary</h2>
+            <dl className="mt-5 space-y-3 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">
+                  {cartItems.length} course{cartItems.length === 1 ? "" : "s"}
+                </dt>
+                <dd>{formatPrice(subtotal)}</dd>
               </div>
-
-              <div className="mb-6 pb-6 border-b border-border">
-                <div className="text-2xl font-bold text-foreground">
-                  ₦{currentTotal.toLocaleString()}
-                </div>
+              <div className="flex justify-between border-t border-border pt-3 text-base font-bold">
+                <dt>Total</dt>
+                <dd>{formatPrice(subtotal)}</dd>
               </div>
-
-              {/* Checkout Button */}
-              <Button
-                onClick={handleCheckout}
-                disabled={isProcessing || cartItems.length === 0}
-                className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 mb-4 disabled:opacity-50"
-              >
-                {isProcessing ? "Processing..." : "Checkout →"}
-              </Button>
-            </div>
-          </div>
+            </dl>
+            <Button size="lg" className="mt-6 h-12 w-full rounded-full text-base" onClick={pay} disabled={isProcessing}>
+              {isProcessing ? <Loader2 className="animate-spin" /> : <Lock />} Pay {formatPrice(subtotal)}
+            </Button>
+            <p className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="size-4 text-success" /> Secured by Paystack · cards, transfer, USSD
+            </p>
+          </aside>
         </div>
-      </div>
+      )}
     </div>
   );
-};
-
-export default CartPage;
+}
