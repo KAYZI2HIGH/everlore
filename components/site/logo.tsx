@@ -1,29 +1,47 @@
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+/** The "e" brand mark on its own (navy). */
 export function LogoMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 40 40" aria-hidden className={cn("size-8", className)}>
-      <circle cx="20" cy="20" r="20" className="fill-primary" />
-      <path
-        d="M12 11h11v3.4h-7.2v3.7h6.4v3.3h-6.4v4.2H23V29H12z"
-        className="fill-primary-foreground"
-      />
-      <path d="M25 11h3.8v14.6H33V29h-8z" className="fill-gold" />
-    </svg>
-  );
+  return <Image src="/brand/mark.png" alt="" width={170} height={182} className={cn("h-8 w-auto", className)} />;
 }
 
-export function Logo({ className, href = "/" }: { className?: string; href?: string }) {
+/**
+ * Full "everlore academy" lockup. `variant="auto"` swaps to the white version in
+ * dark mode; use "light" on navy/dark sections regardless of theme.
+ */
+export function Logo({
+  className,
+  href = "/",
+  variant = "auto",
+  priority,
+}: {
+  className?: string;
+  href?: string;
+  variant?: "auto" | "light";
+  priority?: boolean;
+}) {
   return (
-    <Link href={href} className={cn("flex items-center gap-2.5", className)} aria-label="Everlore home">
-      <LogoMark />
-      <span className="flex flex-col leading-none">
-        <span className="font-display text-[17px] font-extrabold tracking-tight">EVERLORE</span>
-        <span className="mt-0.5 text-[9.5px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          Insight for the future
-        </span>
-      </span>
+    <Link href={href} className={cn("inline-flex shrink-0 items-center", className)} aria-label="Everlore Academy — home">
+      {variant === "auto" && (
+        <Image
+          src="/brand/logo-academy.png"
+          alt="Everlore Academy"
+          width={705}
+          height={210}
+          priority={priority}
+          className="h-9 w-auto dark:hidden sm:h-10"
+        />
+      )}
+      <Image
+        src="/brand/logo-academy-white.png"
+        alt="Everlore Academy"
+        width={705}
+        height={210}
+        priority={priority}
+        className={cn("h-9 w-auto sm:h-10", variant === "auto" && "hidden dark:block")}
+      />
     </Link>
   );
 }

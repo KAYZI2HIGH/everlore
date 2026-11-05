@@ -49,7 +49,7 @@ export default function LearningPage() {
     <div className="container-page py-12 lg:py-16">
       <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">My learning</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">My learning</p>
           {loading ? (
             <Skeleton className="mt-3 h-12 w-72 bg-muted" />
           ) : (
@@ -57,7 +57,7 @@ export default function LearningPage() {
               Welcome back
               {firstName ? (
                 <>
-                  , <span className="text-serif-accent text-brand">{firstName}.</span>
+                  , <span className="text-brand">{firstName}.</span>
                 </>
               ) : (
                 "."

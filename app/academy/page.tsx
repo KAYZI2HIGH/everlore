@@ -23,7 +23,7 @@ export default async function AcademyPage() {
         <div className="container-page relative py-16 sm:py-20">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Everlore Academy</p>
           <h1 className="mt-4 max-w-3xl text-4xl font-extrabold leading-tight sm:text-6xl">
-            Skills that move you <span className="text-serif-accent text-[#a5bdff]">from learning to earning.</span>
+            Skills that move you <span className="text-[#a5bdff]">from learning to earning.</span>
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/70">
             {courses.length} {courses.length === 1 ? "course" : "courses"} with lifetime access,

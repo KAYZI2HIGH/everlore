@@ -26,7 +26,7 @@ export function Hero() {
 
           <h1 className="mt-6 text-[2.6rem] font-extrabold leading-[1.04] sm:text-6xl lg:text-[4.1rem]">
             Learn the skills that{" "}
-            <span className="text-serif-accent text-brand">actually pay</span> in the digital
+            <span className="text-brand">actually pay</span> in the digital
             economy.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">

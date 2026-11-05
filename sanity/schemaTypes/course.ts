@@ -55,27 +55,15 @@ export default {
       type: "string",
       options: {
         list: [
-          { title: "Web Development", value: "web-development" },
-          { title: "Mobile Development", value: "mobile-development" },
-          { title: "Data Science", value: "data-science" },
-          { title: "UI/UX Design", value: "ui-ux-design" },
-          { title: "Business", value: "business" },
-          {
-            title: "YouTube Automation & Content Systems",
-            value: "youtube-automation-content-systems",
-          },
-          {
-            title: "Forex Trading Education",
-            value: "forex-trading-education",
-          },
-          {
-            title: "Digital Services & Freelancing Skills",
-            value: "digital-services-freelancing-skills",
-          },
-          {
-            title: "Online Business & Automation",
-            value: "online-business-automation",
-          },
+          { title: "YouTube Growth", value: "youtube" },
+          { title: "YouTube Automation", value: "youtube-automation" },
+          { title: "Amazon KDP", value: "amazon-kdp" },
+          { title: "Book Publishing", value: "book-publishing" },
+          { title: "Affiliate Marketing", value: "affiliate-marketing" },
+          { title: "Dropshipping", value: "dropshipping" },
+          { title: "Content Creation", value: "content-creation" },
+          { title: "Freelancing", value: "freelancing" },
+          { title: "Forex Trading", value: "forex-trading" },
         ],
       },
     },

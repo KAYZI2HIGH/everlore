@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Instrument_Serif } from "next/font/google";
+import { Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 import { RootProviders } from "@/providers/root-providers";
 import { site } from "@/lib/config";
@@ -10,11 +10,10 @@ const jakarta = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-const instrument = Instrument_Serif({
-  variable: "--font-instrument",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -45,15 +44,14 @@ export const metadata: Metadata = {
     siteName: site.name,
     title: "Everlore — Learn skills that pay",
     description,
-    images: [{ url: "/images/hero-learner.jpg", width: 1400, height: 933, alt: "Everlore Academy" }],
+    images: [{ url: "/brand/og.png", width: 1200, height: 630, alt: "Everlore Academy" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Everlore — Learn skills that pay",
     description,
-    images: ["/images/hero-learner.jpg"],
+    images: ["/brand/og.png"],
   },
-  icons: { icon: "/favicon.ico" },
   category: "education",
 };
 
@@ -69,7 +67,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className={`${jakarta.variable} ${instrument.variable} font-sans antialiased`}>
+      <body className={`${jakarta.variable} ${poppins.variable} font-sans antialiased`}>
         <RootProviders>{children}</RootProviders>
       </body>
     </html>

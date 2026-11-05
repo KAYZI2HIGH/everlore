@@ -142,9 +142,9 @@ export function SignIn({ callbackUrl }: { callbackUrl?: string }) {
 
   return (
     <div>
-      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Welcome back</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">Welcome back</p>
       <h1 className="mt-3 text-4xl font-extrabold leading-tight sm:text-[2.75rem]">
-        Sign in to <span className="text-serif-accent text-brand">keep learning.</span>
+        Sign in to <span className="text-brand">keep learning.</span>
       </h1>
       <p className="mt-3 text-muted-foreground">
         Pick up where you left off with your courses, live classes and mentors.

@@ -3,7 +3,7 @@ export const site = {
   legalName: "Everlore Digital Services Limited",
   tagline: "Insight for the future",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.everloreltd.com",
-  email: "hello@everloreltd.com",
+  email: "info@everloreltd.com",
   currency: "NGN",
 } as const;
 
@@ -22,28 +22,27 @@ export function formatMoney(amount: number, currency: string = site.currency) {
   }).format(amount);
 }
 
-export const categoryLabels: Record<string, string> = {
-  "web-development": "Web Development",
-  "mobile-development": "Mobile Development",
-  "data-science": "Data Science",
-  "ui-ux-design": "UI/UX Design",
-  business: "Business",
-  "youtube-automation-content-systems": "YouTube Automation",
-  "forex-trading-education": "Forex Trading",
-  "digital-services-freelancing-skills": "Freelancing Skills",
-  "online-business-automation": "Online Business",
-};
+/** Academy categories, in menu order. Keep in sync with sanity/schemaTypes/course.ts. */
+export const categories = [
+  { value: "youtube", label: "YouTube Growth", blurb: "Grow and monetise a channel" },
+  { value: "youtube-automation", label: "YouTube Automation", blurb: "Faceless channels and systems" },
+  { value: "amazon-kdp", label: "Amazon KDP", blurb: "Self-publish books on Amazon" },
+  { value: "book-publishing", label: "Book Publishing", blurb: "Aggregators and global stores" },
+  { value: "affiliate-marketing", label: "Affiliate Marketing", blurb: "Earn commissions online" },
+  { value: "dropshipping", label: "Dropshipping", blurb: "Sell without holding stock" },
+  { value: "content-creation", label: "Content Creation", blurb: "Create content that pays" },
+  { value: "freelancing", label: "Freelancing", blurb: "Sell your skills globally" },
+  { value: "forex-trading", label: "Forex Trading", blurb: "Trading education and risk" },
+] as const;
+
+export const categoryLabels: Record<string, string> = Object.fromEntries(
+  categories.map((c) => [c.value, c.label]),
+);
 
 export const categoryLabel = (value?: string) =>
   (value && categoryLabels[value]) ||
   (value ?? "").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 // Shown when a course in Sanity has no thumbnail yet.
-const fallbackImages: Record<string, string> = {
-  "web-development": "/images/course-web.jpg",
-  "data-science": "/images/course-data.jpg",
-  "ui-ux-design": "/images/course-design.jpg",
-  business: "/images/course-business.jpg",
-};
 export const courseFallbackImage = (category?: string) =>
-  (category && fallbackImages[category]) || "/images/course-default.jpg";
+  category ? `/images/courses/${category}.jpg` : "/images/course-default.jpg";

@@ -11,18 +11,19 @@ import { Testimonials } from "@/components/home/testimonials";
 import { CtaBand } from "@/components/home/cta-band";
 import { Contact } from "@/components/home/contact";
 import { fetchCourses } from "@/lib/content";
+import { getHomeStats } from "@/lib/site-settings";
 
 export const revalidate = 300;
 
 export default async function Home() {
-  const courses = await fetchCourses();
+  const [courses, stats] = await Promise.all([fetchCourses(), getHomeStats()]);
   return (
     <>
       <SiteHeader />
       <main>
         <Hero />
         <TopicsMarquee />
-        <About />
+        <About stats={stats} />
         <Pathways />
         <FeaturedCourses courses={courses} />
         <LearnYourWay />

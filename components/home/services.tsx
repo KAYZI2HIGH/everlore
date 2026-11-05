@@ -18,13 +18,13 @@ const SERVICES = [
     icon: Laptop,
     title: "Digital Services",
     body: "Done-for-you builds: websites, automations, channel setup and growth systems.",
-    href: "/#contact",
+    href: "/contact",
   },
   {
     icon: Clapperboard,
     title: "Multimedia & Publishing",
     body: "Book publishing through aggregator platforms and KDP, video production and content.",
-    href: "/#contact",
+    href: "/contact",
   },
 ];
 
@@ -33,9 +33,9 @@ export function Services() {
     <section id="services" className="scroll-mt-20 py-24 lg:py-32">
       <div className="container-page">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">What we do</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">What we do</p>
           <h2 className="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">
-            One company. <span className="text-serif-accent">Four ways to grow.</span>
+            One company. <span className="text-gold-ink">Four ways to grow.</span>
           </h2>
         </div>
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

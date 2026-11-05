@@ -17,9 +17,9 @@ export default function WishlistPage() {
     <div className="container-page py-12 lg:py-16">
       <header className="flex flex-col gap-6 border-b border-border pb-10 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Wishlist</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">Wishlist</p>
           <h1 className="mt-3 text-4xl font-extrabold leading-tight sm:text-5xl">
-            Saved for <span className="text-serif-accent text-brand">later.</span>
+            Saved for <span className="text-brand">later.</span>
           </h1>
           <p className="mt-3 max-w-xl text-muted-foreground">
             Courses you&apos;ve bookmarked. Add them to your cart when you&apos;re ready to start.

@@ -11,9 +11,9 @@ export function FeaturedCourses({ courses }: { courses: Course[] }) {
       <div className="container-page">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">The Academy</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">The Academy</p>
             <h2 className="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">
-              Start with a course <span className="text-serif-accent">built for results.</span>
+              Start with a course <span className="text-gold-ink">built for results.</span>
             </h2>
           </div>
           <Button asChild variant="outline" className="rounded-full self-start sm:self-auto">

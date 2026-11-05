@@ -1,12 +1,8 @@
 import Image from "next/image";
+import { StatCounter } from "@/components/home/stat-counter";
+import type { HomeStat } from "@/lib/site-settings";
 
-const STATS = [
-  { value: "200+", label: "Students enrolled" },
-  { value: "50+", label: "Dreams realised" },
-  { value: "2M+", label: "Revenue generated" },
-];
-
-export function About() {
+export function About({ stats }: { stats: HomeStat[] }) {
   return (
     <section id="about" className="scroll-mt-20 py-24 lg:py-32">
       <div className="container-page grid items-center gap-14 lg:grid-cols-2">
@@ -27,9 +23,9 @@ export function About() {
         </div>
 
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">About Everlore</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">About Everlore</p>
           <h2 className="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">
-            Built on knowledge. <span className="text-serif-accent">Designed for growth.</span>
+            Built on knowledge. <span className="text-gold-ink">Designed for growth.</span>
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
             Everlore Digital Services Limited is a modern digital services company focused on
@@ -37,11 +33,16 @@ export function About() {
             application — helping individuals and businesses grow through practical skills and
             intelligent digital solutions.
           </p>
-          <dl className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-8">
-            {STATS.map((s) => (
+          <dl
+            className="mt-10 grid gap-6 border-t border-border pt-8"
+            style={{ gridTemplateColumns: `repeat(${stats.length}, minmax(0, 1fr))` }}
+          >
+            {stats.map((s) => (
               <div key={s.label}>
                 <dt className="sr-only">{s.label}</dt>
-                <dd className="text-3xl font-extrabold tracking-tight sm:text-4xl">{s.value}</dd>
+                <dd className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+                  <StatCounter value={s.value} prefix={s.prefix} suffix={s.suffix} />
+                </dd>
                 <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
               </div>
             ))}

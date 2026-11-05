@@ -1,163 +1,146 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ArrowLeft } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { getAllBlogPosts } from "@/lib/actions/sanity.actions";
-import imageUrlBuilder from "@sanity/image-url";
+import { BookOpenText } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { BLOG_CATEGORIES, blogCategoryLabel, getPosts } from "@/lib/blog";
+import { FeaturedPost, PostCard } from "@/components/blog/post-card";
+import { PageHero } from "@/components/blog/page-hero";
 
-interface BlogPost {
-  _id: string;
-  title: string;
-  slug: { current: string };
-  summary: string;
-  image?: {
-    asset?: {
-      url: string;
-    };
-  };
-  author: string;
-  category: string;
-  tags?: string[];
-  publishedAt: string;
-  featured: boolean;
-}
+export const metadata: Metadata = {
+  title: "Insights & Resources",
+  description:
+    "Guides, breakdowns and research on digital entrepreneurship, automation, trading and building online income — from the Everlore team.",
+  alternates: { canonical: "/blog" },
+};
 
-export default function BlogPage() {
-  const { data: posts = [], isLoading } = useQuery({
-    queryKey: ["blog-posts"],
-    queryFn: () => getAllBlogPosts(),
-  });
+export const revalidate = 300;
 
-  const builder = imageUrlBuilder({
-    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "",
-    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "",
-  });
+type SearchParams = Promise<{ category?: string | string[] }>;
 
-  const getImageUrl = (image: any) => {
-    if (!image) return "/academy.avif";
-    if (typeof image === "string") return image;
+export default async function BlogPage({ searchParams }: { searchParams: SearchParams }) {
+  const { category: rawCategory } = await searchParams;
+  const category = Array.isArray(rawCategory) ? rawCategory[0] : rawCategory;
 
-    try {
-      return builder.image(image).width(1000).quality(80).url();
-    } catch (error) {
-      return "/academy.avif";
-    }
-  };
+  const posts = await getPosts();
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  // Only show chips for categories that actually have posts (in schema order).
+  const used = new Set(posts.map((p) => p.category).filter(Boolean));
+  const chips = [
+    ...Object.keys(BLOG_CATEGORIES).filter((c) => used.has(c)),
+    ...[...used].filter((c): c is string => !!c && !(c in BLOG_CATEGORIES)),
+  ];
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg text-slate-600">Loading blog posts...</p>
-        </div>
-      </div>
-    );
-  }
+  const active = category && used.has(category) ? category : undefined;
+  const filtered = active ? posts.filter((p) => p.category === active) : posts;
+
+  const featured = active ? undefined : (posts.find((p) => p.featured) ?? posts[0]);
+  const grid = featured ? filtered.filter((p) => p._id !== featured._id) : filtered;
 
   return (
-    <section className="py-32 pt-18 relative">
-      <div className="container flex flex-col items-center gap-10">
-        <div className="text-center border-b pb-6">
-          <h2 className="mx-auto mb-6 text-pretty text-3xl font-semibold md:text-4xl lg:max-w-3xl">
-            Everlore Blogs
-          </h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
-            Discover the latest insights and tutorials about digital
-            entrepreneurship, automation, trading, and building successful
-            online businesses.
-          </p>
-        </div>
+    <>
+      <PageHero
+        eyebrow="Insights & Resources"
+        title={
+          <>
+            Ideas for building <span className="text-gold">in the digital economy.</span>
+          </>
+        }
+        description="Guides, breakdowns and research on automation, trading, freelancing and building online income — what's working right now."
+      />
 
-        <div className="grid gap-y-10 sm:grid-cols-12 sm:gap-y-12 md:gap-y-16 lg:gap-y-20">
-          {posts.length === 0 ?
-            <div className="sm:col-span-12 flex flex-col items-center justify-center py-20">
-              <div className="text-center">
-                <p className="text-lg text-muted-foreground mb-4">
-                  No blog posts yet
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Check back soon for insights and updates
-                </p>
+      <div className="container-page py-12 sm:py-16">
+        {posts.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <>
+            {featured && (
+              <div className="mb-14">
+                <FeaturedPost post={featured} />
               </div>
+            )}
+
+            {chips.length > 0 && (
+              <nav aria-label="Filter by category" className="mb-8 flex flex-wrap gap-2">
+                <Chip href="/blog" active={!active}>
+                  All
+                </Chip>
+                {chips.map((c) => (
+                  <Chip key={c} href={`/blog?category=${encodeURIComponent(c)}`} active={active === c}>
+                    {blogCategoryLabel(c)}
+                  </Chip>
+                ))}
+              </nav>
+            )}
+
+            <div className="mb-6 flex items-baseline justify-between gap-4">
+              <h2 className="text-2xl font-extrabold sm:text-3xl">
+                {active ? (
+                  <>
+                    <span className="text-gold-ink">{blogCategoryLabel(active)}</span> articles
+                  </>
+                ) : (
+                  <>
+                    Latest <span className="text-gold-ink">articles</span>
+                  </>
+                )}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {filtered.length} {filtered.length === 1 ? "post" : "posts"}
+              </p>
             </div>
-          : <>
-              {posts.map((post: BlogPost) => (
-                <Card
-                  key={post._id}
-                  className="order-last border-0 border-b bg-transparent shadow-none sm:order-first sm:col-span-12 lg:col-span-10 lg:col-start-2"
-                >
-                  <div className="grid gap-y-6 sm:grid-cols-10 sm:gap-x-5 sm:gap-y-0 md:items-center md:gap-x-8 lg:gap-x-12">
-                    <div className="sm:col-span-5">
-                      <div className="mb-4 md:mb-6">
-                        <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wider text-muted-foreground md:gap-5 lg:gap-6">
-                          {post.tags?.map((tag: string) => (
-                            <span key={tag}>{tag}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <h3 className="text-xl font-semibold md:text-2xl lg:text-3xl">
-                        <a
-                          href={`/blog/${post.slug.current}`}
-                          className="hover:underline"
-                        >
-                          {post.title}
-                        </a>
-                      </h3>
-                      <p className="mt-4 text-muted-foreground md:mt-5">
-                        {post.summary}
-                      </p>
-                      <div className="mt-6 flex items-center space-x-4 text-sm md:mt-8">
-                        <span className="text-muted-foreground">
-                          {post.author}
-                        </span>
-                        <span className="text-muted-foreground">•</span>
-                        <span className="text-muted-foreground">
-                          {formatDate(post.publishedAt)}
-                        </span>
-                      </div>
-                      <div className="mt-6 flex items-center space-x-2 md:mt-8">
-                        <a
-                          href={`/blog/${post.slug.current}`}
-                          className="inline-flex items-center font-semibold hover:underline md:text-base"
-                        >
-                          <span>Read more</span>
-                          <ArrowRight className="ml-2 size-4 transition-transform" />
-                        </a>
-                      </div>
-                    </div>
-                    <div className="order-first sm:order-last sm:col-span-5">
-                      <a
-                        href={`/blog/${post.slug.current}`}
-                        className="block"
-                      >
-                        <div className="aspect-[16/9] overflow-clip rounded-lg border border-border">
-                          <img
-                            src={getImageUrl(post.image)}
-                            alt={post.title}
-                            className="h-full w-full object-cover transition-opacity duration-200 fade-in hover:opacity-70"
-                          />
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </>
-          }
-        </div>
+
+            {grid.length === 0 ? (
+              <p className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">
+                That&apos;s everything for now — check back soon for more.
+              </p>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {grid.map((post) => (
+                  <PostCard key={post._id} post={post} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
-    </section>
+    </>
+  );
+}
+
+function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      scroll={false}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "rounded-full border px-4 py-2 text-sm font-semibold transition",
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-card text-muted-foreground hover:border-brand/40 hover:text-foreground",
+      )}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="mx-auto flex max-w-md flex-col items-center py-16 text-center">
+      <span className="grid size-16 place-items-center rounded-3xl bg-secondary text-primary dark:text-brand">
+        <BookOpenText className="size-7" />
+      </span>
+      <h2 className="mt-6 text-2xl font-extrabold">No articles yet</h2>
+      <p className="mt-2 text-muted-foreground">
+        We&apos;re writing our first pieces. Check back soon for insights and guides.
+      </p>
+      <Link
+        href="/academy"
+        className="mt-6 inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+      >
+        Browse the Academy
+      </Link>
+    </div>
   );
 }

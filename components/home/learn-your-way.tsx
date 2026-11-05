@@ -32,7 +32,7 @@ export function LearnYourWay() {
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">How you learn</p>
           <h2 className="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">
-            Learn at your pace. <span className="text-serif-accent text-[#a5bdff]">Grow with people.</span>
+            Learn at your pace. <span className="text-[#a5bdff]">Grow with people.</span>
           </h2>
           <p className="mt-5 text-lg text-white/65">
             Video gives you the skill. Live sessions and mentorship give you the accountability to

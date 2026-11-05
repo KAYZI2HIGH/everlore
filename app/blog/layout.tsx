@@ -1,15 +1,13 @@
+import type { ReactNode } from "react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
-import React from "react";
 
-const BlogLayout = ({ children }: { children: React.ReactNode }) => {
+export default function BlogLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <SiteHeader />
-      <main className="container-page py-12">{children}</main>
+      <main>{children}</main>
       <SiteFooter />
     </>
   );
-};
-
-export default BlogLayout;
+}

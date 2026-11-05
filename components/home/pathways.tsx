@@ -40,9 +40,9 @@ export function Pathways() {
     <section className="bg-muted/50 py-24 lg:py-32">
       <div className="container-page">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Why Everlore</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">Why Everlore</p>
           <h2 className="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">
-            We don&apos;t teach courses. <span className="text-serif-accent">We build outcomes.</span>
+            We don&apos;t teach courses. <span className="text-gold-ink">We build outcomes.</span>
           </h2>
         </div>
         <div className="mt-14 grid gap-4 lg:grid-cols-3">

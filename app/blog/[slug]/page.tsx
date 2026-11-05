@@ -1,308 +1,195 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Calendar, User, Tag } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { getBlogPostBySlug } from "@/lib/actions/sanity.actions";
-import imageUrlBuilder from "@sanity/image-url";
-import { PortableText } from "@portabletext/react";
-import { use } from "react";
+import { notFound } from "next/navigation";
+import { ArrowRight, Clock, GraduationCap } from "lucide-react";
+import { site } from "@/lib/config";
+import { blogCategoryLabel, formatDate, getPostBySlug, getPosts, getRelatedPosts } from "@/lib/blog";
+import { PortableBody } from "@/components/blog/portable-body";
+import { PostCard, PostCover } from "@/components/blog/post-card";
+import { ShareButtons } from "@/components/blog/share-buttons";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
-interface BlogPost {
-  _id: string;
-  title: string;
-  slug: { current: string };
-  summary: string;
-  content: any[];
-  image?: {
-    asset?: {
-      url: string;
-    };
-  };
-  author: string;
-  category: string;
-  tags?: string[];
-  publishedAt: string;
-  featured: boolean;
+export const revalidate = 300;
+
+type Params = Promise<{ slug: string }>;
+
+export async function generateStaticParams() {
+  const posts = await getPosts();
+  return posts.map((p) => ({ slug: p.slug }));
 }
 
-interface BlogDetailPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
-}
-
-const portableTextComponents = {
-  types: {
-    image: ({ value }: any) => {
-      if (!value?.asset) return null;
-      const builder = imageUrlBuilder({
-        projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "",
-        dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "",
-      });
-      const imageUrl = builder.image(value).width(800).quality(80).url();
-      return (
-        <img
-          src={imageUrl}
-          alt={value.alt || "Blog image"}
-          className="w-full rounded-lg my-8 border border-border"
-        />
-      );
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  if (!post) return { title: "Article not found" };
+  return {
+    title: post.title,
+    description: post.summary,
+    alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description: post.summary,
+      publishedTime: post.publishedAt,
+      authors: [post.author],
+      tags: post.tags,
+      ...(post.image ? { images: [{ url: post.image }] } : {}),
     },
-    code: ({ value }: any) => (
-      <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto my-6">
-        <code className="text-sm font-mono">{value.code}</code>
-      </pre>
-    ),
-  },
-  block: {
-    h1: ({ children }: any) => (
-      <h1 className="text-4xl font-bold mt-8 mb-4 text-slate-900">
-        {children}
-      </h1>
-    ),
-    h2: ({ children }: any) => (
-      <h2 className="text-3xl font-bold mt-8 mb-4 text-slate-900">
-        {children}
-      </h2>
-    ),
-    h3: ({ children }: any) => (
-      <h3 className="text-2xl font-bold mt-6 mb-3 text-slate-900">
-        {children}
-      </h3>
-    ),
-    h4: ({ children }: any) => (
-      <h4 className="text-xl font-bold mt-6 mb-3 text-slate-900">{children}</h4>
-    ),
-    normal: ({ children }: any) => (
-      <p className="text-base text-slate-700 leading-relaxed mb-4">
-        {children}
-      </p>
-    ),
-    blockquote: ({ children }: any) => (
-      <blockquote className="border-l-4 border-blue-500 pl-6 py-4 my-6 italic text-slate-700 bg-blue-50 rounded-r">
-        {children}
-      </blockquote>
-    ),
-  },
-  list: {
-    bullet: ({ children }: any) => (
-      <ul className="list-disc list-outside space-y-2 mb-4 text-slate-700 ml-6">
-        {children}
-      </ul>
-    ),
-    number: ({ children }: any) => (
-      <ol className="list-decimal list-outside space-y-2 mb-4 text-slate-700 ml-6">
-        {children}
-      </ol>
-    ),
-  },
-  listItem: {
-    bullet: ({ children }: any) => <li className="ml-2">{children}</li>,
-    number: ({ children }: any) => <li className="ml-2">{children}</li>,
-  },
-  marks: {
-    strong: ({ children }: any) => (
-      <strong className="font-bold text-slate-900">{children}</strong>
-    ),
-    em: ({ children }: any) => (
-      <em className="italic text-slate-800">{children}</em>
-    ),
-    code: ({ children }: any) => (
-      <code className="bg-slate-100 px-2 py-1 rounded text-sm font-mono text-red-600">
-        {children}
-      </code>
-    ),
-    link: ({ children, value }: any) => (
-      <a
-        href={value?.href}
-        className="text-blue-600 hover:underline hover:text-blue-800"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {children}
-      </a>
-    ),
-  },
-};
-
-export default function BlogDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = use(params);
-  return <BlogDetailContent slug={slug} />;
+    twitter: { card: "summary_large_image", title: post.title, description: post.summary },
+  };
 }
 
-function BlogDetailContent({ slug }: { slug: string }) {
-  const {
-    data: post,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["blog-post", slug],
-    queryFn: () => getBlogPostBySlug(slug),
-  });
+export default async function BlogPostPage({ params }: { params: Params }) {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  if (!post) notFound();
 
-  // Debug logging
-  console.log("Blog slug:", slug);
-  console.log("Post data:", post);
-  console.log("Error:", error);
-  console.log("isLoading:", isLoading);
-
-  const builder = imageUrlBuilder({
-    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "",
-    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "",
-  });
-
-  const getImageUrl = (image: any) => {
-    if (!image) return "/academy.avif";
-    if (typeof image === "string") return image;
-
-    try {
-      return builder.image(image).width(1200).quality(80).url();
-    } catch (error) {
-      return "/academy.avif";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg text-slate-600">Loading blog post...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !post) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-4">Post not found</h2>
-          <p className="text-muted-foreground mb-2">
-            Slug: <code className="bg-slate-100 px-2 py-1 rounded">{slug}</code>
-          </p>
-          <p className="text-muted-foreground mb-6">
-            No blog posts match this slug. Make sure you've created a blog post
-            in Sanity with this exact slug.
-          </p>
-          <Button asChild>
-            <Link href="/blog">Back to Blog</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const related = await getRelatedPosts(post);
+  const url = `${site.url.replace(/\/$/, "")}/blog/${post.slug}`;
 
   return (
-    <section className="py-12 relative">
-      <div className="container max-w-4xl mx-auto">
-        {/* Back Button */}
-        <div className="mb-8">
-          <Button
-            variant="outline"
-            asChild
-          >
-            <Link href="/blog">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Blog
-            </Link>
-          </Button>
-        </div>
+    <article>
+      <header className="container-page pt-10 sm:pt-14">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/">Home</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/blog">Insights</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            {post.category && (
+              <>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link href={`/blog?category=${encodeURIComponent(post.category)}`}>
+                      {blogCategoryLabel(post.category)}
+                    </Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+              </>
+            )}
+            <BreadcrumbSeparator className="hidden sm:block" />
+            <BreadcrumbItem className="hidden sm:inline-flex">
+              <BreadcrumbPage className="line-clamp-1 max-w-[28ch]">{post.title}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
-        {/* Hero Image */}
-        {post.image && (
-          <div className="mb-8 md:mb-12 rounded-lg overflow-hidden border border-border h-80 md:h-96">
-            <img
-              src={getImageUrl(post.image)}
-              alt={post.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="mb-8 md:mb-12">
-          <div className="mb-4 flex flex-wrap gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-            {post.tags?.map((tag: string) => (
-              <span
-                key={tag}
-                className="flex items-center gap-1"
-              >
-                <Tag className="w-3 h-3" />
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            {post.title}
-          </h1>
-
-          <p className="text-lg text-muted-foreground mb-8">{post.summary}</p>
-
-          {/* Metadata */}
-          <div className="flex flex-wrap gap-6 text-sm text-muted-foreground border-b pb-6">
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              <span>{post.author}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              <span>{formatDate(post.publishedAt)}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">{post.category}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="mb-16">
-          {post.content && post.content.length > 0 ?
-            <div className="space-y-4 text-slate-700">
-              <PortableText
-                value={post.content}
-                components={portableTextComponents}
-              />
-            </div>
-          : <p className="text-muted-foreground">No content available</p>}
-        </div>
-
-        {/* Footer */}
-        <div className="border-t pt-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div className="mb-6 md:mb-0">
-              <h3 className="text-sm font-semibold uppercase tracking-wider mb-2">
-                Category
-              </h3>
-              <p className="text-lg font-medium">{post.category}</p>
-            </div>
-            <Button
-              asChild
-              variant="outline"
+        <div className="mx-auto mt-10 max-w-3xl text-center">
+          {post.category && (
+            <Link
+              href={`/blog?category=${encodeURIComponent(post.category)}`}
+              className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink hover:underline"
             >
-              <Link href="/blog">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to All Posts
-              </Link>
-            </Button>
+              {blogCategoryLabel(post.category)}
+            </Link>
+          )}
+          <h1 className="mt-4 text-4xl font-extrabold leading-[1.1] sm:text-5xl">{post.title}</h1>
+          {post.summary && <p className="mt-5 text-lg leading-relaxed text-muted-foreground">{post.summary}</p>}
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-2 font-semibold text-foreground">
+              <span className="grid size-8 place-items-center rounded-full bg-secondary text-xs font-bold text-primary dark:text-brand">
+                {post.author.charAt(0).toUpperCase()}
+              </span>
+              {post.author}
+            </span>
+            <span aria-hidden>·</span>
+            <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+            <span aria-hidden>·</span>
+            <span className="inline-flex items-center gap-1">
+              <Clock className="size-4" /> {post.readingTime} min read
+            </span>
           </div>
+        </div>
+
+        <PostCover
+          src={post.image}
+          priority
+          sizes="(min-width: 1280px) 1216px, 100vw"
+          className="mt-10 aspect-[16/9] rounded-3xl border border-border sm:mt-12"
+        />
+      </header>
+
+      <div className="container-page py-12 sm:py-16">
+        <div className="mx-auto max-w-[68ch]">
+          {post.content.length > 0 ? (
+            <PortableBody value={post.content} />
+          ) : (
+            <p className="text-muted-foreground">This article has no content yet.</p>
+          )}
+
+          <footer className="mt-14 space-y-8 border-t border-border pt-8">
+            {post.tags.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="mr-1 text-sm font-semibold text-muted-foreground">Tags</span>
+                {post.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <p className="text-sm font-semibold">Share this article</p>
+              <ShareButtons url={url} title={post.title} />
+            </div>
+          </footer>
+
+          <aside className="relative mt-14 overflow-hidden rounded-3xl bg-ink p-8 text-white sm:p-10">
+            <div aria-hidden className="absolute -right-16 -top-16 size-64 rounded-full bg-brand/40 blur-3xl" />
+            <div className="relative">
+              <span className="grid size-12 place-items-center rounded-2xl bg-white/10 text-gold">
+                <GraduationCap className="size-6" />
+              </span>
+              <h2 className="mt-6 text-2xl font-extrabold leading-tight sm:text-3xl">
+                Ready to put this <span className="text-gold">into practice?</span>
+              </h2>
+              <p className="mt-3 max-w-lg text-white/70">
+                Everlore Academy courses turn ideas like these into step-by-step skills you can earn from.
+              </p>
+              <Link
+                href="/academy"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-gold-foreground transition hover:opacity-90"
+              >
+                Explore the Academy <ArrowRight className="size-4" />
+              </Link>
+            </div>
+          </aside>
         </div>
       </div>
-    </section>
+
+      {related.length > 0 && (
+        <section className="border-t border-border bg-muted/40 py-16">
+          <div className="container-page">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">Keep reading</p>
+            <h2 className="mt-3 text-3xl font-extrabold">
+              More on <span className="text-gold-ink">{blogCategoryLabel(post.category)}</span>
+            </h2>
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((p) => (
+                <PostCard key={p._id} post={p} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </article>
   );
 }

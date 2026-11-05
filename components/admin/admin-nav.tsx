@@ -14,6 +14,7 @@ import {
   Menu,
   PenSquare,
   Radio,
+  Settings,
   Upload,
   Users,
   X,
@@ -28,6 +29,7 @@ const MAIN = [
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
   { href: "/admin/messages", label: "Messages", icon: Inbox },
+  { href: "/admin/settings", label: "Site settings", icon: Settings },
 ];
 
 const NEXT = [

@@ -47,9 +47,9 @@ export function Contact() {
     <section id="contact" className="scroll-mt-20 pb-24 lg:pb-32">
       <div className="container-page grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Get in touch</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">Get in touch</p>
           <h2 className="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">
-            Tell us what you <span className="text-serif-accent">want to build.</span>
+            Tell us what you <span className="text-gold-ink">want to build.</span>
           </h2>
           <p className="mt-5 max-w-md text-lg text-muted-foreground">
             Questions about a course, a project or a partnership? Send a message and our team will

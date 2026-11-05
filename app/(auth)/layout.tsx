@@ -51,7 +51,7 @@ export default function AuthLayout({
             <Quote className="size-8 text-gold" />
             <p className="mt-4 max-w-lg text-3xl font-extrabold leading-tight xl:text-4xl">
               Skills that{" "}
-              <span className="text-serif-accent text-gold">pay</span>, taught
+              <span className="text-gold">pay</span>, taught
               by people who do the work.
             </p>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-white/75">

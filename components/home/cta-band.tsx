@@ -12,7 +12,7 @@ export function CtaBand() {
           <div className="relative flex flex-col items-start justify-between gap-10 lg:flex-row lg:items-center">
             <div className="max-w-2xl">
               <h2 className="text-4xl font-extrabold leading-tight sm:text-5xl">
-                Ready to transform your <span className="text-serif-accent text-gold">digital future?</span>
+                Ready to transform your <span className="text-gold">digital future?</span>
               </h2>
               <p className="mt-4 text-lg opacity-75">
                 Create a free account, browse the academy and start your first lesson today.

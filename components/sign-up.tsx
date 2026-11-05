@@ -35,9 +35,9 @@ export function SignUp({ callbackUrl }: { callbackUrl?: string }) {
 
   return (
     <div>
-      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Get started</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">Get started</p>
       <h1 className="mt-3 text-4xl font-extrabold leading-tight sm:text-[2.75rem]">
-        Create your <span className="text-serif-accent text-brand">free account.</span>
+        Create your <span className="text-brand">free account.</span>
       </h1>
       <p className="mt-3 text-muted-foreground">
         Save courses, enrol in a few clicks and learn at your own pace.

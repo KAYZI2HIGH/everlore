@@ -7,8 +7,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-jakarta);
-  --font-display: var(--font-jakarta);
-  --font-serif: var(--font-instrument);
+  --font-display: var(--font-poppins);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -43,6 +42,7 @@
   --color-brand-foreground: var(--brand-foreground);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
+  --color-gold-ink: var(--gold-ink);
   --color-ink: var(--ink);
   --color-success: var(--success);
   --radius-sm: calc(var(--radius) - 4px);
@@ -78,32 +78,33 @@
   --card-foreground: #0a1530;
   --popover: #ffffff;
   --popover-foreground: #0a1530;
-  --primary: #0b2a6f;
+  --primary: #0a2a6e;
   --primary-foreground: #ffffff;
   --brand: #1e4fd8;
   --brand-foreground: #ffffff;
-  --gold: #c8892b;
+  --gold: #c59a55;
   --gold-foreground: #1a1205;
+  --gold-ink: #8a6122;
   --ink: #07112b;
   --secondary: #eef1f8;
-  --secondary-foreground: #0b2a6f;
+  --secondary-foreground: #0a2a6e;
   --muted: #f1f0ec;
   --muted-foreground: #5b6479;
   --accent: #eef1f8;
-  --accent-foreground: #0b2a6f;
+  --accent-foreground: #0a2a6e;
   --destructive: #d23a3a;
   --success: #16a34a;
   --border: #e6e4de;
   --input: #dcdad3;
   --ring: #1e4fd8;
   --chart-1: #1e4fd8;
-  --chart-2: #c8892b;
-  --chart-3: #0b2a6f;
+  --chart-2: #c59a55;
+  --chart-3: #0a2a6e;
   --chart-4: #16a34a;
   --chart-5: #8b5cf6;
   --sidebar: #ffffff;
   --sidebar-foreground: #0a1530;
-  --sidebar-primary: #0b2a6f;
+  --sidebar-primary: #0a2a6e;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #eef1f8;
   --sidebar-accent-foreground: #0b2a6f;
@@ -122,8 +123,9 @@
   --primary-foreground: #07112b;
   --brand: #6f97ff;
   --brand-foreground: #07112b;
-  --gold: #e3aa52;
+  --gold: #d2aa68;
   --gold-foreground: #1a1205;
+  --gold-ink: #dcb77a;
   --ink: #040917;
   --secondary: #16203f;
   --secondary-foreground: #eef1f8;
@@ -162,8 +164,9 @@
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv11";
   }
-  h1, h2, h3, h4 {
-    @apply font-display tracking-tight;
+  h1, h2, h3, h4, h5 {
+    @apply font-display;
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
   p {
@@ -174,9 +177,6 @@
 @layer utilities {
   .container-page {
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
-  }
-  .text-serif-accent {
-    @apply font-serif italic font-normal tracking-normal;
   }
   .bg-grid {
     background-image:

@@ -1,31 +1,33 @@
 import Link from "next/link";
 import { Mail } from "lucide-react";
 import { Logo } from "@/components/site/logo";
-import { site } from "@/lib/config";
+import { categories, site } from "@/lib/config";
 
 const COLUMNS = [
   {
-    title: "Academy",
+    title: "Courses",
     links: [
       { href: "/academy", label: "All courses" },
-      { href: "/academy/learning", label: "My learning" },
-      { href: "/academy/wishlist", label: "Wishlist" },
+      ...categories.slice(0, 5).map((c) => ({ href: `/academy?category=${c.value}`, label: c.label })),
     ],
   },
   {
     title: "Company",
     links: [
-      { href: "/#about", label: "About Everlore" },
-      { href: "/#services", label: "Services" },
+      { href: "/about", label: "About Everlore" },
+      { href: "/services", label: "Services" },
       { href: "/blog", label: "Insights & resources" },
-      { href: "/hiring", label: "Careers" },
+      { href: "/careers", label: "Careers" },
+      { href: "/contact", label: "Contact" },
     ],
   },
   {
-    title: "Support",
+    title: "Your account",
     links: [
-      { href: "/#contact", label: "Contact us" },
-      { href: `mailto:${site.email}`, label: site.email },
+      { href: "/academy/learning", label: "My learning" },
+      { href: "/academy/wishlist", label: "Wishlist" },
+      { href: "/academy/cart", label: "Cart" },
+      { href: "/sign-in", label: "Sign in" },
     ],
   },
 ];
@@ -33,12 +35,12 @@ const COLUMNS = [
 export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-card">
-      <div className="container-page grid gap-12 py-16 md:grid-cols-[1.4fr_repeat(3,1fr)]">
-        <div className="max-w-sm space-y-4">
+      <div className="container-page grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.3fr_repeat(3,1fr)]">
+        <div className="max-w-sm space-y-5">
           <Logo />
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {site.legalName} builds practical skills, real-world strategies and sustainable income
-            for the digital economy.
+            Practical online courses that teach you to build income on YouTube, Amazon KDP, book
+            publishing and more — by {site.legalName}.
           </p>
           <a
             href={`mailto:${site.email}`}
@@ -49,7 +51,7 @@ export function SiteFooter() {
         </div>
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <h3 className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               {col.title}
             </h3>
             <ul className="mt-4 space-y-3">
@@ -65,11 +67,14 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="border-t border-border">
-        <div className="container-page flex flex-col gap-2 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="container-page flex flex-col gap-3 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {site.legalName}. RC 9000892.
+            © {new Date().getFullYear()} {site.legalName} · RC 9000892
           </p>
-          <p>Made in Nigeria for learners everywhere.</p>
+          <div className="flex gap-5">
+            <Link href="/privacy" className="hover:text-foreground">Privacy policy</Link>
+            <Link href="/terms" className="hover:text-foreground">Terms of service</Link>
+          </div>
         </div>
       </div>
     </footer>

@@ -27,9 +27,9 @@ export function Testimonials() {
     <section className="bg-muted/50 py-24 lg:py-32">
       <div className="container-page">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Testimonials</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-ink">Testimonials</p>
           <h2 className="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">
-            What our <span className="text-serif-accent">learners say</span>
+            What our <span className="text-gold-ink">learners say</span>
           </h2>
         </div>
         <div className="mt-14 grid gap-6 md:grid-cols-3">
